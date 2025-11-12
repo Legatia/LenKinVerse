@@ -1,11 +1,11 @@
 🧪 Core Concept
 
-You’re designing an indie Web3 game that blends chemistry, material alchemy, and blockchain economies.
-Each blockchain represents a separate world, and the player explores these worlds to collect raw materials, process them in a laboratory, and forge new substances — some of which become tokens or NFTs.
+It is an indie Web3 game that blends chemistry education, alchemy sorcery, and blockchain economies.
+Each blockchain represents a separate planet, and the player explores their planet to collect raw materials, process them with physical/chemical/nuclear reaction, and forge new substances — some of which become tokens or NFTs.
 
 The guiding idea:
 
-A cross-chain multiverse where each chain’s ecosystem has unique material properties and gameplay mechanics.
+A cross-chain multiverse where each chain’s ecosystem has unique environmental properties and gameplay mechanics.
 
 ⸻
 
@@ -13,10 +13,9 @@ A cross-chain multiverse where each chain’s ecosystem has unique material prop
 
 Structure:
 	•	Flat map navigation for resource collection — a lightweight map rather than a complex 3D environment.
-	•	Laboratory for fast and by batch combining and transforming materials through “reactions” (chemistry-inspired fusion logic). Webapp only, need to be constructed with materials, only work with ready formula&recipes
-  •   Alchem Gloves for mobile app rapid reaction, similar to laboratory, need to be charged with primary materials in order to work. It's the 2nd gadget everyone born with in the world, first one is storage bag to put everything. 
-	•	Anything other than primary materials can be minted into NFTs or new elements transmuted into tokens, like really launched on chain (shitcoin-like elements in your lore).
-	•	Speed-based efficiency system: walking, cycling, driving affects how much a player can collect (e.g., walking = 95% efficiency, driving = 30%).
+	•	Laboratory for fast and batch processing materials. Webapp only, need to be constructed with materials, only work with ready formula&recipes
+  • Alchem Gloves for mobile app rapid reaction, similar to laboratory but can experiment new combinations, need to be charged with primary materials in order to work. It's the 2nd gadget everyone born with in the world, first one is storage bag to put everything. 
+	•	Anything other than primary materials can be minted into NFTs or new elements transmuted into tokens, like really launched on chain (shitcoin).
 
 Goal:
 To make the world feel physically reactive — every movement and combination yields new alchemical results.
@@ -31,14 +30,10 @@ You plan to build different worlds on multiple chains, with each chain having:
 
 Planned Worlds:
 	•	Solana → the “primary essense” is the alSOL, lkC represent the characteristic of Carbon in real world, 1 lkC = 12*10^-6 alSOL
-	•	Base → lightweight EVM implementation, all ETH L2 world are satellite planets surrounding Ethereum planet, Ethereum primary material maybe Calsius or Silicon, but can be changed. 
+	•	Base → lightweight EVM implementation, all ETH L2 world are satellite planets surrounding Ethereum planet, Ethereum primary material maybe Silicon. 
 	•	Somnia → dream-themed accelerator chain; longer-term plan, good for creative expansions, primary material represents Nitrogen from real world.
 	•	Sui → considered for next-month hackathon entry, different primary material, represent water from real world. 
 
-You decided to begin with Solana first — because:
-	•	Solana is hosting an indie hackathon now.
-	•	Sui comes next due to their upcoming hackathon.
-	•	Somnia can wait since their ecosystem is less active right now.
 
 ⸻
 
@@ -62,37 +57,30 @@ You discussed keeping system-level data (GPS, speed) off-chain, while final outc
 
 🎨 Creative Layer & Educational Element
 
-You’re considering integrating light blockchain education into the game — teaching players about how different blockchains work, disguised through the world mechanics (e.g., Solana’s fast reactions, Base’s efficiency, Sui’s stability).
+Considering integrating light blockchain education into the game — teaching players about how different blockchains work, disguised through the world mechanics (e.g., Solana’s fast reactions, Base’s efficiency, Sui’s stability).
 
 This adds a learning dimension without breaking immersion.
 
-⸻
-
-🗺️ Current Roadmap Summary
-
-Phase	Chain	Focus	Opportunities
-Phase 1	Solana	Join indie hackathon, test player mechanics	Solana hackathon
-Phase 2	Sui	Add new world, test Move-based logic	Sui hackathon
-Phase 3	Somnia	Expand lore, apply to Dream Catalyst	Somnia accelerator
-Later	Cross-chain	Bridge worlds, unify inventory and NFTs	Potential interoperability
 
 
 ⸻
 
 🧩 Overall Theme
 
-The LenkinVerse becomes a metaphor for blockchain experimentation:
-Each chain is a chemical element; every player an alchemist exploring the strange reactions between them.
+The LenkinVerse becomes a metaphor for the Evolution, on blockchain:
+Each chain is a newly formed planet; every player an alchemist participating the evolution of its ecosystem.
 
 Your design balances gameplay, education, and real blockchain interaction, starting simple and modular — a perfect indie-first strategy.
 
-**The Solana world**
+**The world mechanism**
 
 ## Core Concept
 
-A blockchain-based chemistry crafting game on Solana where players discover elements, perform reactions, and build an emergent economy through material discovery and minting.
+A blockchain-based chemistry crafting game where players discover elements, perform reactions, and build an emergent economy through material discovery and minting.
 
 -----
+
+**Solana**
 
 ## Game Loop & Mechanics
 
@@ -100,10 +88,11 @@ A blockchain-based chemistry crafting game on Solana where players discover elem
 
 **Material Acquisition:**
 
-- Primary raw material lkC, price equals to 12 * 10^-6 of alSOL(Carbon equivalent in real chemistry)
+- Primary raw material LKC, price equals to 12 * 10^-6 of alSOL(Carbon equivalent in real chemistry)
 - alSOL is game currency backed by staked SOL from dev treasury
 - Three collection methods:
-  - **Walking**: Passively collect lkC spawns from mobile api about movements with tiered efficiency depend on speed
+  - **Walking**: Passively collect lkC spawns from mobile api, proof of movement.
+  Speed-based efficiency system: walking, cycling, driving affects how much a player can collect (e.g., walking = 95% efficiency, driving = 30%).
   - **lkC Magnet**: Craft magnets to pull lkC and other raw material from radius around you
     - Efficiency degrades with distance from player
     - Leftover materials remain on ground for others
@@ -122,7 +111,7 @@ A blockchain-based chemistry crafting game on Solana where players discover elem
 - Cannot be purchased (anti-whale mechanic)
 - Decays over time (half-life ~1 day)
 - Forces usage or trading
-- Different isotopes drop from different elements (C14 from lkC, O18 from lkO, etc.)
+- Different isotopes drop from different elements (C14 from lkC, O18 from LKO, etc.)
 
 -----
 
@@ -208,7 +197,7 @@ A blockchain-based chemistry crafting game on Solana where players discover elem
 - Element-specific communities (Carbon School, Oxygen School, etc.)
 - Players specialize in element-based crafting
 - Develop unique recipes and strategies
-- Foundation for future territory/battle systems
+- Foundation for future territory/battle/social guilds systems
 
 -----
 
@@ -297,7 +286,7 @@ OUTPUT:
 
 **Casual Players:**
 
-- Walk to collect lkC
+- Move to collect lkC
 - Standard chemistry reactions
 - Learn real chemistry
 - Occasional isotope = lottery excitement
@@ -337,7 +326,7 @@ OUTPUT:
 
 ## Key Design Principles
 
-1. **Education meets Innovation**: Real chemistry (deterministic) + creative exploration (AI-driven)
+1. **Education meets Innovation**: Real chemistry (deterministic) + creative exploration (AI-driven) -->> organic creation
 1. **Scarcity through Randomness**: AI non-determinism creates natural rarity tiers
 1. **Two Economies**: Standard elements (stable) + Innovation materials (volatile)
 1. **Time > Money**: Can’t whale your way to isotopes, must farm
@@ -349,7 +338,7 @@ OUTPUT:
 
 ## Technical Priorities for MVP
 
-1. **GPS collection system** with alSOL spawning
+1. **GPS collection system** with raw material spawning
 1. **Rule engine** with 100-500 basic reactions
 1. **Isotope drop system** (0.1% rate, decay timer)
 1. **AI integration** for isotope-catalyzed reactions
@@ -358,13 +347,4 @@ OUTPUT:
 1. **Caching system** to reduce AI costs
 
 -----
-
-## Open Questions for Development
-
-1. Isotope decay: Real-time or discrete checks?
-1. Magnet mechanics: Consumable or permanent?
-1. Failed reaction penalty: Full loss or partial return?
-1. AI validation: Accept all outputs or secondary rule check?
-1. Element spawn threshold: Fixed number or percentage?
-1. Transmutation specificity: Hardcoded physics or flexible system?​​​​​​​​​​​​​​​​
 
