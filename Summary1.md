@@ -13,9 +13,9 @@ A cross-chain multiverse where each chain’s ecosystem has unique material prop
 
 Structure:
 	•	Flat map navigation for resource collection — a lightweight map rather than a complex 3D environment.
-	•	Laboratory for fast and by batch combining and transforming materials through “reactions” (chemistry-inspired fusion logic). Webapp only, need to be constructed with materials
-    •   Alchem Gloves for mobile app rapid reaction, similar to laboratory, need to be charged with primary materials in order to work. It's the 2nd gadget everyone born with in the world, first one is storage bag to put everything. 
-	•	Anything other than primary materials can be minted into NFTs or transmuted into tokens, like really launched on chain (shitcoin-like elements in your lore).
+	•	Laboratory for fast and by batch combining and transforming materials through “reactions” (chemistry-inspired fusion logic). Webapp only, need to be constructed with materials, only work with ready formula&recipes
+  •   Alchem Gloves for mobile app rapid reaction, similar to laboratory, need to be charged with primary materials in order to work. It's the 2nd gadget everyone born with in the world, first one is storage bag to put everything. 
+	•	Anything other than primary materials can be minted into NFTs or new elements transmuted into tokens, like really launched on chain (shitcoin-like elements in your lore).
 	•	Speed-based efficiency system: walking, cycling, driving affects how much a player can collect (e.g., walking = 95% efficiency, driving = 30%).
 
 Goal:
@@ -30,7 +30,7 @@ You plan to build different worlds on multiple chains, with each chain having:
 	•	Unique chain-specific specialties reflected in materials, lore, or environment.
 
 Planned Worlds:
-	•	Solana → the “primary material” is the alSOL, represent the characteristic of Carbon in real world.
+	•	Solana → the “primary essense” is the alSOL, lkC represent the characteristic of Carbon in real world, 1 lkC = 12*10^-6 alSOL
 	•	Base → lightweight EVM implementation, all ETH L2 world are satellite planets surrounding Ethereum planet, Ethereum primary material maybe Calsius or Silicon, but can be changed. 
 	•	Somnia → dream-themed accelerator chain; longer-term plan, good for creative expansions, primary material represents Nitrogen from real world.
 	•	Sui → considered for next-month hackathon entry, different primary material, represent water from real world. 
@@ -100,7 +100,7 @@ A blockchain-based chemistry crafting game on Solana where players discover elem
 
 **Material Acquisition:**
 
-- Primary raw material lkC, price equals to 10^-6 of alSOL(Carbon equivalent in real chemistry)
+- Primary raw material lkC, price equals to 12 * 10^-6 of alSOL(Carbon equivalent in real chemistry)
 - alSOL is game currency backed by staked SOL from dev treasury
 - Three collection methods:
   - **Walking**: Passively collect lkC spawns from mobile api about movements with tiered efficiency depend on speed
@@ -112,7 +112,7 @@ A blockchain-based chemistry crafting game on Solana where players discover elem
 
 **Spawn System:**
 
-- World starts with only alSOL spawning naturally
+- World starts with only lkC spawning naturally
 - When another element reaches high circulation / minted as fungible token on chain → begins spawning wild
 - Creates organic element distribution over time
 
@@ -166,7 +166,7 @@ A blockchain-based chemistry crafting game on Solana where players discover elem
 
 **Option 1: Mint as Token (Public)**
 
-- Element becomes tradeable token on Solana
+- Element becomes tradeable token on Solana after total supply reaches 1 million
 - You gain governance rights over the element
 - Establish treasury that collects “taxes”
 - Anyone crafting this element pays percentage to your treasury
