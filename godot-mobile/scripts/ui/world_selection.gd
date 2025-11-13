@@ -1,7 +1,7 @@
 extends Control
 ## World/Blockchain selection screen
 
-@onready var world_container: VBoxContainer = $Panel/VBoxContainer/WorldContainer
+@onready var world_container: VBoxContainer = $Panel/VBoxContainer/ScrollContainer/WorldContainer
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
 @onready var subtitle_label: Label = $Panel/VBoxContainer/SubtitleLabel
 
