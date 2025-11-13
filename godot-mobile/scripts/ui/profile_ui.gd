@@ -2,6 +2,7 @@ extends Control
 ## Profile/Stats screen showing user progress
 
 @onready var wallet_label: Label = $Panel/VBoxContainer/WalletSection/WalletLabel
+@onready var world_label: Label = $Panel/VBoxContainer/WalletSection/WorldLabel
 @onready var gloves_level_label: Label = $Panel/VBoxContainer/GlovesSection/LevelLabel
 @onready var gloves_progress_bar: ProgressBar = $Panel/VBoxContainer/GlovesSection/ProgressBar
 @onready var gloves_progress_label: Label = $Panel/VBoxContainer/GlovesSection/ProgressBar/Label
@@ -22,6 +23,15 @@ func refresh_stats() -> void:
 		wallet_label.text = "👻 " + shortened
 	else:
 		wallet_label.text = "👻 Not Connected"
+
+	# World info
+	var world_data = WorldManager.get_current_world()
+	if not world_data.is_empty():
+		var icon = world_data.get("icon", "🌍")
+		var name = world_data.get("display_name", "Unknown")
+		world_label.text = "%s %s" % [icon, name]
+	else:
+		world_label.text = "🌍 No World Selected"
 
 	# Gloves info
 	var gloves_data = load_gloves_data()

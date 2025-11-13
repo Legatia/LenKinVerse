@@ -86,6 +86,10 @@ text = "Wallet"
 layout_mode = 2
 text = "👻 8x7f...2kQ9"
 
+[node name="WorldLabel" type="Label" parent="Panel/VBoxContainer/WalletSection"]
+layout_mode = 2
+text = "🌍 No World Selected"
+
 [node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
