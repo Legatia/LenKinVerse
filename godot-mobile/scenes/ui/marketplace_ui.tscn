@@ -1,0 +1,247 @@
+[gd_scene load_steps=2 format=3 uid="uid://marketplace_ui"]
+
+[ext_resource type="Script" path="res://scripts/ui/marketplace_ui.gd" id="1_marketplace"]
+
+[node name="MarketplaceUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_marketplace")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -280.0
+offset_right = 170.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🖥️ SOLANA MARKETPLACE"
+
+[node name="CloseButton" type="Button" parent="Panel/VBoxContainer/Header"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "X"
+
+[node name="WalletInfo" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="WalletLabel" type="Label" parent="Panel/VBoxContainer/WalletInfo"]
+layout_mode = 2
+text = "Wallet: Not Connected"
+
+[node name="BalanceLabel" type="Label" parent="Panel/VBoxContainer/WalletInfo"]
+layout_mode = 2
+text = "Balance: 0.00 SOL"
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Buy" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Buy"]
+layout_mode = 2
+text = "📊 Market Listings:"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/TabContainer/Buy"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ListingsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Item1" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item1"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⚫ lkC × 1000"
+
+[node name="PriceLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item1"]
+layout_mode = 2
+text = "0.01 SOL"
+
+[node name="BuyButton" type="Button" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item1"]
+layout_mode = 2
+text = "BUY"
+
+[node name="Item2" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🔵 lkO × 500"
+
+[node name="PriceLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item2"]
+layout_mode = 2
+text = "0.02 SOL"
+
+[node name="BuyButton" type="Button" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item2"]
+layout_mode = 2
+text = "BUY"
+
+[node name="Item3" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item3"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🔴 CO₂ × 100"
+
+[node name="PriceLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item3"]
+layout_mode = 2
+text = "0.05 SOL"
+
+[node name="BuyButton" type="Button" parent="Panel/VBoxContainer/TabContainer/Buy/ScrollContainer/ListingsContainer/Item3"]
+layout_mode = 2
+text = "BUY"
+
+[node name="Sell" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Sell"]
+layout_mode = 2
+text = "Your Inventory:"
+
+[node name="InventoryContainer" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Sell"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EmptyLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Sell/InventoryContainer"]
+layout_mode = 2
+text = "No items to sell"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Sell"]
+layout_mode = 2
+
+[node name="SellPanel" type="Panel" parent="Panel/VBoxContainer/TabContainer/Sell"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ItemLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel/VBoxContainer"]
+layout_mode = 2
+text = "⚫ lkC × 1,247"
+
+[node name="AmountContainer" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel/VBoxContainer/AmountContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Amount:"
+
+[node name="AmountInput" type="LineEdit" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel/VBoxContainer/AmountContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "100"
+placeholder_text = "Amount"
+
+[node name="PriceContainer" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel/VBoxContainer/PriceContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Price:"
+
+[node name="PriceInput" type="LineEdit" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel/VBoxContainer/PriceContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "0.001"
+placeholder_text = "SOL"
+
+[node name="ListButton" type="Button" parent="Panel/VBoxContainer/TabContainer/Sell/SellPanel/VBoxContainer"]
+layout_mode = 2
+text = "LIST FOR SALE"
+
+[node name="Mint" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Mint"]
+layout_mode = 2
+text = "Create new tokens/NFTs:"
+
+[node name="InfoLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Mint"]
+layout_mode = 2
+text = "Mint your discovered elements and items as tokens or NFTs on Solana."
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Mint"]
+layout_mode = 2
+
+[node name="MintableItems" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Mint"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EmptyLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Mint/MintableItems"]
+layout_mode = 2
+text = "No items ready to mint
+(Discover new elements first!)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="Panel/VBoxContainer/Header/CloseButton" to="." method="_on_close_button_pressed"]

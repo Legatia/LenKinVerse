@@ -15,6 +15,8 @@ godot-mobile/
 ├── scenes/
 │   ├── main.tscn           # Main room scene
 │   └── ui/                 # UI screens
+│       ├── login_screen.tscn
+│       ├── offline_rewards.tscn
 │       ├── storage_ui.tscn
 │       ├── gloves_ui.tscn
 │       └── marketplace_ui.tscn
@@ -22,8 +24,11 @@ godot-mobile/
 │   ├── player.gd           # Player character controller
 │   ├── interactable_zone.gd # Furniture interaction system
 │   └── ui/                 # UI scripts
+│       ├── login_screen.gd
+│       ├── offline_rewards.gd
 │       ├── storage_ui.gd
-│       └── gloves_ui.gd
+│       ├── gloves_ui.gd
+│       └── marketplace_ui.gd
 └── assets/
     ├── sprites/            # Pixel art sprites
     ├── fonts/              # Press Start 2P font
@@ -34,48 +39,68 @@ godot-mobile/
 
 ### ✅ Implemented
 
-1. **Room Scene** - Top-down alchemy lab with 3 interactive zones
+1. **Login Screen** - Wallet authentication
+   - Solana wallet connection (Phantom/Solflare)
+   - Health tracking permissions request
+   - First-time user flow
+
+2. **Offline Rewards Modal** - Welcome back screen
+   - Distance traveled calculation
+   - Raw material rewards display
+   - Animated progress bar
+   - Quick access to analysis or continue
+
+3. **Room Scene** - Top-down alchemy lab with 3 interactive zones
    - Storage Box (top-left)
    - Gloves Station (center)
    - Marketplace (bottom-right)
 
-2. **Player Movement** - Top-down character controller
+4. **Player Movement** - Top-down character controller
    - 4-direction movement (WASD or arrow keys)
-   - Walking animations (placeholder)
+   - Visual feedback (color changes)
    - Proximity-based interactions
+   - Interaction prompts
 
-3. **Inventory System** - Complete management
+5. **Inventory System** - Complete management
    - Raw materials (unprocessed)
    - Elements (processed)
    - Isotopes (with decay timers)
    - Items/NFTs
 
-4. **Gloves System** - Analysis and reactions
+6. **Gloves System** - Analysis and reactions
    - 5 levels of progression
    - Batch analysis (size scales with level)
    - Processing speed improvements
    - Charge management
    - Isotope discovery (0.1% chance)
+   - Level-up notifications
 
-5. **Storage UI** - Inventory browser
+7. **Storage UI** - Inventory browser
    - Tabbed interface (Raw/Elements/Isotopes)
    - Take/deposit functionality
    - Real-time updates
 
-6. **Game Manager** - App lifecycle
+8. **Marketplace UI** - Trading hub
+   - Buy tab (market listings)
+   - Sell tab (list your items)
+   - Mint tab (create tokens/NFTs)
+   - Wallet integration
+   - Transaction signing
+
+9. **Game Manager** - App lifecycle
    - Offline rewards calculation
    - Save/load system
    - Background/resume handling
 
 ### 🚧 TODO
 
-1. **Marketplace UI** - Buy/sell/mint screen
-2. **Reaction System** - Physical/chemical/nuclear reactions
-3. **Profile/Stats Screen** - User progress tracking
-4. **Pixel Art Assets** - Replace placeholder sprites
-5. **Native Plugins** - Solana wallet & health APIs
-6. **Tutorial System** - First-time user onboarding
-7. **Sound Effects** - Collection, analysis, reactions
+1. **Reaction System** - Physical/chemical/nuclear reactions (in Gloves UI)
+2. **Profile/Stats Screen** - User progress tracking
+3. **Pixel Art Assets** - Replace placeholder sprites
+4. **Native Plugins** - Solana wallet & health APIs
+5. **Tutorial System** - First-time user onboarding
+6. **Sound Effects** - Collection, analysis, reactions
+7. **Backend API** - Marketplace listings, transaction validation
 
 ## 🔌 Native Plugins Needed
 
