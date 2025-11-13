@@ -11,7 +11,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_storage_ui")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+
+[node name="ColorRect" type="ColorRect" parent="Background"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,6 +28,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.8)
+mouse_filter = 2
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
@@ -113,4 +123,5 @@ text = "💎 C14 × 2 ⏱️4h"
 layout_mode = 2
 text = "TAKE"
 
+[connection signal="pressed" from="Background" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]
