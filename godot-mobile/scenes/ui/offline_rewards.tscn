@@ -1,0 +1,156 @@
+[gd_scene load_steps=2 format=3 uid="uid://offline_rewards"]
+
+[ext_resource type="Script" path="res://scripts/ui/offline_rewards.gd" id="1_rewards"]
+
+[node name="OfflineRewards" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rewards")
+
+[node name="Background" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+
+[node name="ColorRect" type="ColorRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.9)
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -220.0
+offset_right = 150.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "⚡ WELCOME BACK ALCHEMIST! ⚡"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="TravelLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "You traveled while away:"
+horizontal_alignment = 1
+
+[node name="DistanceLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "🚶 0.00 km"
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="Panel/VBoxContainer"]
+layout_mode = 2
+max_value = 1.0
+value = 0.0
+show_percentage = false
+
+[node name="ProgressLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Calculating rewards..."
+horizontal_alignment = 1
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ResultsPanel" type="Panel" parent="Panel/VBoxContainer"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ResultsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="ResultTitle" type="Label" parent="Panel/VBoxContainer/ResultsPanel/VBoxContainer"]
+layout_mode = 2
+text = "💎 Raw Materials Collected:"
+horizontal_alignment = 1
+
+[node name="ChunksLabel" type="Label" parent="Panel/VBoxContainer/ResultsPanel/VBoxContainer"]
+layout_mode = 2
+text = "📦 × 0 chunks"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer/ResultsPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="DetailsLabel" type="RichTextLabel" parent="Panel/VBoxContainer/ResultsPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Base: 0 × 0 avg = 0
+Efficiency: 0%
+────────────
+Final: 0 raw lkC"
+fit_content = true
+scroll_active = false
+
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AnalyzeButton" type="Button" parent="Panel/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ANALYZE NOW"
+
+[node name="ContinueButton" type="Button" parent="Panel/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "CONTINUE"
+
+[connection signal="pressed" from="Background" to="." method="_on_continue_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ButtonContainer/AnalyzeButton" to="." method="_on_analyze_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ButtonContainer/ContinueButton" to="." method="_on_continue_button_pressed"]
