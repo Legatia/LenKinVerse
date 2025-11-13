@@ -132,16 +132,24 @@ godot-mobile/
 ### 🚧 TODO
 
 1. **Pixel Art Assets** - Replace placeholder sprites
-2. **Native Plugins** - Solana wallet & health APIs
+2. **Native Plugin Implementation** - Build Solana wallet & health APIs (specs ready)
 3. **Sound Effects** - Collection, analysis, reactions
 4. **Backend API** - Marketplace listings, transaction validation
 
-## 🔌 Native Plugins Needed
+## 🔌 Native Plugins
+
+### ✅ Specifications Complete
+
+Complete documentation for native plugin developers:
+- **Solana Wallet:** `/docs/SOLANA_PLUGIN_SPEC.md`
+- **Implementation Guide:** `/docs/SOLANA_PLUGIN_IMPLEMENTATION.md`
 
 ### 1. Solana Mobile Wallet Adapter
 
+**Status:** 📋 Specification Complete - Ready for Implementation
+
 **Platform:** iOS & Android
-**Singleton Name:** `SolanaMobileWallet`
+**Singleton Name:** `SolanaWallet`
 
 **Methods:**
 ```gdscript
