@@ -14,11 +14,18 @@ func _ready() -> void:
 
 	# Enable click detection on the furniture itself
 	input_pickable = true
-	input_event.connect(_on_input_event)
+	print("Furniture ready: ", zone_name, " - input_pickable: ", input_pickable)
+
+	# Connect input event signal
+	if not input_event.is_connected(_on_input_event):
+		input_event.connect(_on_input_event)
+		print("Connected input_event for: ", zone_name)
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	print("Input event received on: ", zone_name, " - ", event)
 	# Direct click/touch on furniture
 	if event is InputEventMouseButton:
+		print("Mouse button event: ", event.button_index, " pressed: ", event.pressed)
 		if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			interact()
 
