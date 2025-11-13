@@ -50,12 +50,14 @@ func _physics_process(_delta: float) -> void:
 func _on_interaction_area_entered(area: Area2D) -> void:
 	if area.is_in_group("interactable"):
 		nearby_interactable = area.get_parent()
-		show_interaction_prompt()
+		# Disabled: Direct click interaction is used instead
+		# show_interaction_prompt()
 
 func _on_interaction_area_exited(area: Area2D) -> void:
 	if area.is_in_group("interactable") and area.get_parent() == nearby_interactable:
 		nearby_interactable = null
-		hide_interaction_prompt()
+		# Disabled: Direct click interaction is used instead
+		# hide_interaction_prompt()
 
 func interact_with_nearby() -> void:
 	if nearby_interactable and nearby_interactable.has_method("interact"):
