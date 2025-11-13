@@ -44,30 +44,37 @@ godot-mobile/
    - Health tracking permissions request
    - First-time user flow
 
-2. **Offline Rewards Modal** - Welcome back screen
+2. **World/Blockchain Selection** - Multi-chain support
+   - Choose between Solana, Ethereum-Base, or Sui
+   - Beautiful world cards with descriptions
+   - Color-coded blockchain branding
+   - Persistent world selection
+   - Displayed in profile screen
+   - Foundation for multi-chain expansion
+
+3. **Offline Rewards Modal** - Welcome back screen
    - Distance traveled calculation
    - Raw material rewards display
    - Animated progress bar
    - Quick access to analysis or continue
 
-3. **Room Scene** - Top-down alchemy lab with 3 interactive zones
+4. **Room Scene** - Top-down alchemy lab with 3 interactive zones
    - Storage Box (top-left)
    - Gloves Station (center)
    - Marketplace (bottom-right)
 
-4. **Player Movement** - Top-down character controller
+5. **Player Movement** - Top-down character controller
    - 4-direction movement (WASD or arrow keys)
    - Visual feedback (color changes)
-   - Proximity-based interactions
-   - Interaction prompts
+   - Direct click-to-interact on furniture
 
-5. **Inventory System** - Complete management
+6. **Inventory System** - Complete management
    - Raw materials (unprocessed)
    - Elements (processed)
    - Isotopes (with decay timers)
    - Items/NFTs
 
-6. **Gloves System** - Analysis and reactions
+7. **Gloves System** - Analysis and reactions
    - 5 levels of progression
    - Batch analysis (size scales with level)
    - Processing speed improvements
@@ -75,19 +82,19 @@ godot-mobile/
    - Isotope discovery (0.1% chance)
    - Level-up notifications
 
-7. **Storage UI** - Inventory browser
+8. **Storage UI** - Inventory browser
    - Tabbed interface (Raw/Elements/Isotopes)
    - Take/deposit functionality
    - Real-time updates
 
-8. **Marketplace UI** - Trading hub
+9. **Marketplace UI** - Trading hub
    - Buy tab (market listings)
    - Sell tab (list your items)
    - Mint tab (create tokens/NFTs)
    - Wallet integration
    - Transaction signing
 
-9. **Reaction System** - Complete chemistry engine
+10. **Reaction System** - Complete chemistry engine
    - Physical reactions (1× charge multiplier)
    - Chemical reactions (2× charge multiplier)
    - Nuclear reactions (5× charge multiplier, requires isotope catalysts)
@@ -95,25 +102,26 @@ godot-mobile/
    - Element selection grid and reactant slots
    - Success/failure handling with animations
 
-10. **Profile/Stats Screen** - User progress tracking
+11. **Profile/Stats Screen** - User progress tracking
    - Wallet address display
+   - Selected blockchain/world display
    - Gloves level and progress bar
    - Total analyses performed
    - Distance traveled
    - Total materials collected
    - Isotopes discovered count
 
-11. **Game Manager** - App lifecycle
+12. **Game Manager** - App lifecycle
    - Offline rewards calculation
    - Save/load system
    - Background/resume handling
 
-12. **HUD System** - Real-time stats display
+13. **HUD System** - Real-time stats display
    - Charge, lkC, and raw material counts
    - Profile button with icon
    - Auto-updating stats
 
-13. **Tutorial System** - First-time user onboarding
+14. **Tutorial System** - First-time user onboarding
    - 7-step guided walkthrough
    - Highlights furniture with pointer arrows
    - Skip option for experienced users
