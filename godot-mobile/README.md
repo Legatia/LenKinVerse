@@ -113,13 +113,20 @@ godot-mobile/
    - Profile button with icon
    - Auto-updating stats
 
+13. **Tutorial System** - First-time user onboarding
+   - 7-step guided walkthrough
+   - Highlights furniture with pointer arrows
+   - Skip option for experienced users
+   - Progress tracking and save state
+   - Only shows on first launch
+   - Explains all core mechanics
+
 ### 🚧 TODO
 
 1. **Pixel Art Assets** - Replace placeholder sprites
 2. **Native Plugins** - Solana wallet & health APIs
-3. **Tutorial System** - First-time user onboarding
-4. **Sound Effects** - Collection, analysis, reactions
-5. **Backend API** - Marketplace listings, transaction validation
+3. **Sound Effects** - Collection, analysis, reactions
+4. **Backend API** - Marketplace listings, transaction validation
 
 ## 🔌 Native Plugins Needed
 
@@ -197,8 +204,9 @@ get_steps(options: Dictionary) -> Dictionary
 ### Running in Editor
 
 1. Press F5 or click "Play" button
-2. Use WASD or arrow keys to move
-3. Walk near furniture and press E to interact
+2. Use WASD or arrow keys to move player
+3. Click directly on furniture to interact (Storage, Gloves, Marketplace)
+4. Follow the tutorial on first launch
 
 ### Building for Mobile
 
