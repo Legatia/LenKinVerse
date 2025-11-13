@@ -4,7 +4,7 @@ extends Node
 signal tutorial_step_completed(step_id: String)
 signal tutorial_completed
 
-var tutorial_completed: bool = false
+var is_tutorial_completed: bool = false
 var current_step: int = 0
 
 var completed_steps: Array[String] = []
@@ -61,7 +61,7 @@ func _ready() -> void:
 func load_tutorial_state() -> void:
 	var save_path = "user://tutorial.save"
 	if not FileAccess.file_exists(save_path):
-		tutorial_completed = false
+		is_tutorial_completed = false
 		current_step = 0
 		completed_steps = []
 		return
@@ -74,13 +74,13 @@ func load_tutorial_state() -> void:
 		var parse_result = json.parse(json_string)
 		if parse_result == OK:
 			var data = json.data
-			tutorial_completed = data.get("tutorial_completed", false)
+			is_tutorial_completed = data.get("tutorial_completed", false)
 			current_step = data.get("current_step", 0)
 			completed_steps = data.get("completed_steps", [])
 
 func save_tutorial_state() -> void:
 	var save_data = {
-		"tutorial_completed": tutorial_completed,
+		"tutorial_completed": is_tutorial_completed,
 		"current_step": current_step,
 		"completed_steps": completed_steps
 	}
@@ -91,7 +91,7 @@ func save_tutorial_state() -> void:
 		file.close()
 
 func should_show_tutorial() -> bool:
-	return not tutorial_completed
+	return not is_tutorial_completed
 
 func get_current_step() -> Dictionary:
 	if current_step < tutorial_steps.size():
@@ -109,18 +109,18 @@ func advance_tutorial() -> void:
 
 		# Check if tutorial is complete
 		if current_step >= tutorial_steps.size():
-			tutorial_completed = true
+			is_tutorial_completed = true
 			save_tutorial_state()
 			tutorial_completed.emit()
 
 func reset_tutorial() -> void:
-	tutorial_completed = false
+	is_tutorial_completed = false
 	current_step = 0
 	completed_steps = []
 	save_tutorial_state()
 
 func mark_completed() -> void:
-	tutorial_completed = true
+	is_tutorial_completed = true
 	current_step = tutorial_steps.size()
 	save_tutorial_state()
 	tutorial_completed.emit()
