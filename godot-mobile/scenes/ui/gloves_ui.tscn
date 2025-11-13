@@ -140,10 +140,53 @@ text = "[ RECHARGE ] (80 raw lkC → +10 ⚡)"
 [node name="Reactions" type="VBoxContainer" parent="Panel/TabContainer"]
 visible = false
 layout_mode = 2
+theme_override_constants/separation = 10
 
-[node name="InfoLabel" type="Label" parent="Panel/TabContainer/Reactions"]
+[node name="ModeSelector" type="HBoxContainer" parent="Panel/TabContainer/Reactions"]
 layout_mode = 2
-text = "Drag & Drop Elements:"
+
+[node name="PhysicalButton" type="Button" parent="Panel/TabContainer/Reactions/ModeSelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "⚙️ Physical"
+
+[node name="ChemicalButton" type="Button" parent="Panel/TabContainer/Reactions/ModeSelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "🧪 Chemical"
+
+[node name="NuclearButton" type="Button" parent="Panel/TabContainer/Reactions/ModeSelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "☢️ Nuclear"
+
+[node name="HSeparator" type="HSeparator" parent="Panel/TabContainer/Reactions"]
+layout_mode = 2
+
+[node name="AvailableLabel" type="Label" parent="Panel/TabContainer/Reactions"]
+layout_mode = 2
+text = "Your Elements:"
+
+[node name="ElementsContainer" type="ScrollContainer" parent="Panel/TabContainer/Reactions"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ElementsGrid" type="GridContainer" parent="Panel/TabContainer/Reactions/ElementsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 3
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/TabContainer/Reactions"]
+layout_mode = 2
+
+[node name="ReactantsLabel" type="Label" parent="Panel/TabContainer/Reactions"]
+layout_mode = 2
+text = "Selected Reactants:"
 
 [node name="ReactantSlots" type="HBoxContainer" parent="Panel/TabContainer/Reactions"]
 layout_mode = 2
@@ -151,31 +194,33 @@ layout_mode = 2
 [node name="Slot1" type="Button" parent="Panel/TabContainer/Reactions/ReactantSlots"]
 custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
-text = "Empty"
+text = "+"
 
 [node name="Slot2" type="Button" parent="Panel/TabContainer/Reactions/ReactantSlots"]
 custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
-text = "Empty"
+text = "+"
 
 [node name="Slot3" type="Button" parent="Panel/TabContainer/Reactions/ReactantSlots"]
 custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
-text = "Empty"
+text = "+"
 
-[node name="HSeparator" type="HSeparator" parent="Panel/TabContainer/Reactions"]
+[node name="IsotopeLabel" type="Label" parent="Panel/TabContainer/Reactions"]
 layout_mode = 2
+text = "Isotope Catalyst (Nuclear only):"
 
-[node name="ReactionTypeLabel" type="Label" parent="Panel/TabContainer/Reactions"]
+[node name="IsotopeSlot" type="Button" parent="Panel/TabContainer/Reactions"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-text = "Type: ⚙️ Physical | 🧪 Chemical | ☢️ Nuclear"
+text = "No Isotope Selected"
+
+[node name="HSeparator3" type="HSeparator" parent="Panel/TabContainer/Reactions"]
+layout_mode = 2
 
 [node name="ChargeLabel" type="Label" parent="Panel/TabContainer/Reactions"]
 layout_mode = 2
 text = "Charge Required: 0 ⚡"
-
-[node name="HSeparator2" type="HSeparator" parent="Panel/TabContainer/Reactions"]
-layout_mode = 2
 
 [node name="ReactButton" type="Button" parent="Panel/TabContainer/Reactions"]
 layout_mode = 2

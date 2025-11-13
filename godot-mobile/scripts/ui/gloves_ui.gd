@@ -21,12 +21,38 @@ const LEVEL_CONFIG = {
 @onready var progress_label: Label = $Panel/ProgressLabel
 @onready var raw_lkc_label: Label = $Panel/TabContainer/Analyze/RawLKCLabel
 
+# Reactions tab nodes (declared early for _ready access)
+@onready var elements_grid: GridContainer = $Panel/TabContainer/Reactions/ElementsContainer/ElementsGrid
+@onready var physical_button: Button = $Panel/TabContainer/Reactions/ModeSelector/PhysicalButton
+@onready var chemical_button: Button = $Panel/TabContainer/Reactions/ModeSelector/ChemicalButton
+@onready var nuclear_button: Button = $Panel/TabContainer/Reactions/ModeSelector/NuclearButton
+@onready var reactant_slots: HBoxContainer = $Panel/TabContainer/Reactions/ReactantSlots
+@onready var isotope_slot: Button = $Panel/TabContainer/Reactions/IsotopeSlot
+@onready var reaction_charge_label: Label = $Panel/TabContainer/Reactions/ChargeLabel
+@onready var react_button: Button = $Panel/TabContainer/Reactions/ReactButton
+
 func _ready() -> void:
 	load_gloves_data()
 	update_ui()
 
 	# Connect to inventory updates
 	InventoryManager.inventory_changed.connect(update_ui)
+	InventoryManager.inventory_changed.connect(populate_reaction_elements)
+
+	# Connect reaction buttons
+	physical_button.pressed.connect(func(): _on_mode_selected("physical"))
+	chemical_button.pressed.connect(func(): _on_mode_selected("chemical"))
+	nuclear_button.pressed.connect(func(): _on_mode_selected("nuclear"))
+	react_button.pressed.connect(_on_react_button_pressed)
+	isotope_slot.pressed.connect(_on_isotope_slot_pressed)
+
+	# Connect reactant slots
+	for i in range(3):
+		var slot = reactant_slots.get_child(i)
+		slot.pressed.connect(func(): _on_reactant_slot_pressed(i))
+
+	# Populate elements list
+	populate_reaction_elements()
 
 func update_ui() -> void:
 	# Update charge bar
@@ -216,3 +242,149 @@ func load_gloves_data() -> void:
 
 func _on_close_button_pressed() -> void:
 	queue_free()
+
+# ========================================
+# REACTIONS TAB
+# ========================================
+
+# Reaction state
+var selected_mode: String = "physical"
+var selected_reactants: Dictionary = {}  # {element: amount}
+var selected_isotope: Dictionary = {}
+
+func _on_mode_selected(mode: String) -> void:
+	selected_mode = mode
+
+	# Update button states
+	physical_button.button_pressed = (mode == "physical")
+	chemical_button.button_pressed = (mode == "chemical")
+	nuclear_button.button_pressed = (mode == "nuclear")
+
+	# Update UI
+	update_reaction_ui()
+
+func populate_reaction_elements() -> void:
+	if not elements_grid:
+		return
+
+	# Clear existing buttons
+	for child in elements_grid.get_children():
+		child.queue_free()
+
+	# Add buttons for each available element
+	for element in InventoryManager.elements:
+		var amount = InventoryManager.elements[element]
+		if amount > 0:
+			add_element_button(element, amount)
+
+func add_element_button(element: String, amount: int) -> void:
+	var button = Button.new()
+	button.text = "%s\n×%d" % [element, amount]
+	button.custom_minimum_size = Vector2(60, 50)
+	button.pressed.connect(func(): _on_element_selected(element))
+	elements_grid.add_child(button)
+
+func _on_element_selected(element: String) -> void:
+	# Add to reactants or increase amount
+	if selected_reactants.has(element):
+		selected_reactants[element] += 1
+	else:
+		selected_reactants[element] = 1
+
+	update_reaction_ui()
+
+func _on_reactant_slot_pressed(slot_index: int) -> void:
+	# Remove element from this slot
+	var keys = selected_reactants.keys()
+	if slot_index < keys.size():
+		var element = keys[slot_index]
+		selected_reactants[element] -= 1
+		if selected_reactants[element] <= 0:
+			selected_reactants.erase(element)
+
+	update_reaction_ui()
+
+func _on_isotope_slot_pressed() -> void:
+	# Show isotope selection
+	if InventoryManager.isotopes.is_empty():
+		show_message("No isotopes available!")
+		return
+
+	# For now, select first available isotope
+	selected_isotope = InventoryManager.isotopes[0]
+	update_reaction_ui()
+
+func update_reaction_ui() -> void:
+	# Update reactant slots
+	var keys = selected_reactants.keys()
+	for i in range(3):
+		var slot = reactant_slots.get_child(i)
+		if i < keys.size():
+			var element = keys[i]
+			var amount = selected_reactants[element]
+			slot.text = "%s×%d" % [element, amount]
+		else:
+			slot.text = "+"
+
+	# Update isotope slot
+	if selected_isotope.is_empty():
+		isotope_slot.text = "No Isotope Selected"
+	else:
+		isotope_slot.text = "💎 %s" % selected_isotope.get("type", "?")
+
+	# Calculate charge required
+	var total_units = 0
+	for element in selected_reactants:
+		total_units += selected_reactants[element]
+
+	var multiplier = 1
+	match selected_mode:
+		"physical": multiplier = 1
+		"chemical": multiplier = 2
+		"nuclear": multiplier = 5
+
+	var charge_required = total_units * multiplier
+	reaction_charge_label.text = "Charge Required: %d ⚡" % charge_required
+
+func _on_react_button_pressed() -> void:
+	if selected_reactants.is_empty():
+		show_message("Select elements to react!")
+		return
+
+	# Perform reaction
+	var result = ReactionManager.perform_reaction(
+		selected_reactants,
+		selected_mode,
+		selected_isotope
+	)
+
+	if result.get("success"):
+		# Success!
+		var products = result.get("products", {})
+		var reaction = result.get("reaction", {})
+
+		var message = "✨ REACTION SUCCESS! ✨\n\n"
+		message += "%s\n\n" % reaction.get("name", "Unknown Reaction")
+
+		for product in products:
+			message += "+%d %s\n" % [products[product], product]
+
+		if result.get("is_new_discovery"):
+			message += "\n🎉 NEW DISCOVERY!"
+
+		show_message(message)
+
+		# Clear selection
+		selected_reactants.clear()
+		selected_isotope = {}
+		update_reaction_ui()
+
+		# Update main UI (charge changed)
+		load_gloves_data()
+		update_ui()
+		populate_reaction_elements()
+
+	else:
+		# Failed
+		var error = result.get("error", "Unknown error")
+		show_message("❌ REACTION FAILED\n\n" + error)
