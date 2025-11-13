@@ -1,0 +1,30 @@
+# Anchor
+.anchor
+target/
+**/*.rs.bk
+test-ledger/
+
+# IDL
+idl/
+
+# Keys
+*.json
+!tsconfig.json
+!package.json
+!package-lock.json
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Rust
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Build outputs
+*.so
+
+# Test
+.vscode/
