@@ -3,17 +3,21 @@ extends CharacterBody2D
 
 @export var move_speed: float = 100.0
 
-@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var sprite: ColorRect = $ColorRect
 @onready var interaction_area: Area2D = $InteractionArea
 
 var current_direction: String = "down"
 var is_moving: bool = false
 var nearby_interactable: Node2D = null
+var interaction_prompt: Label = null
 
 func _ready() -> void:
 	# Connect interaction area signals
 	interaction_area.area_entered.connect(_on_interaction_area_entered)
 	interaction_area.area_exited.connect(_on_interaction_area_exited)
+
+	# Get reference to HUD prompt
+	interaction_prompt = get_node("/root/Main/HUD/InteractionPrompt")
 
 func _physics_process(_delta: float) -> void:
 	# Get input direction
@@ -27,14 +31,13 @@ func _physics_process(_delta: float) -> void:
 	# Update velocity
 	velocity = input_vector * move_speed
 
-	# Update animation
+	# Update visual (simple color change for now)
 	if input_vector.length() > 0:
 		is_moving = true
-		update_direction(input_vector)
-		play_walk_animation()
+		sprite.color = Color(0.3, 0.7, 0.3, 1)
 	else:
 		is_moving = false
-		play_idle_animation()
+		sprite.color = Color(0.4, 0.8, 0.4, 1)
 
 	# Move character
 	move_and_slide()
@@ -42,35 +45,6 @@ func _physics_process(_delta: float) -> void:
 	# Check for interaction input
 	if Input.is_action_just_pressed("ui_interact") and nearby_interactable:
 		interact_with_nearby()
-
-func update_direction(input: Vector2) -> void:
-	# Determine primary direction
-	if abs(input.x) > abs(input.y):
-		current_direction = "right" if input.x > 0 else "left"
-	else:
-		current_direction = "down" if input.y > 0 else "up"
-
-func play_walk_animation() -> void:
-	match current_direction:
-		"down":
-			sprite.play("walk_down")
-		"up":
-			sprite.play("walk_up")
-		"left":
-			sprite.play("walk_left")
-		"right":
-			sprite.play("walk_right")
-
-func play_idle_animation() -> void:
-	match current_direction:
-		"down":
-			sprite.play("idle_down")
-		"up":
-			sprite.play("idle_up")
-		"left":
-			sprite.play("idle_left")
-		"right":
-			sprite.play("idle_right")
 
 func _on_interaction_area_entered(area: Area2D) -> void:
 	if area.is_in_group("interactable"):
@@ -87,9 +61,10 @@ func interact_with_nearby() -> void:
 		nearby_interactable.interact()
 
 func show_interaction_prompt() -> void:
-	# TODO: Show [E] prompt UI
-	pass
+	if interaction_prompt and nearby_interactable:
+		interaction_prompt.text = "[E] %s" % nearby_interactable.zone_name
+		interaction_prompt.visible = true
 
 func hide_interaction_prompt() -> void:
-	# TODO: Hide prompt UI
-	pass
+	if interaction_prompt:
+		interaction_prompt.visible = false

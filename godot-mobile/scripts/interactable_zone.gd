@@ -4,7 +4,6 @@ extends StaticBody2D
 @export var zone_name: String = "Interactable"
 @export var scene_to_open: String = ""  # Path to UI scene
 
-@onready var sprite: Sprite2D = $Sprite2D
 @onready var interaction_area: Area2D = $InteractionArea
 
 func _ready() -> void:
