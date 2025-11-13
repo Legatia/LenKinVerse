@@ -87,20 +87,39 @@ godot-mobile/
    - Wallet integration
    - Transaction signing
 
-9. **Game Manager** - App lifecycle
+9. **Reaction System** - Complete chemistry engine
+   - Physical reactions (1× charge multiplier)
+   - Chemical reactions (2× charge multiplier)
+   - Nuclear reactions (5× charge multiplier, requires isotope catalysts)
+   - Reaction database with 20+ reactions
+   - Element selection grid and reactant slots
+   - Success/failure handling with animations
+
+10. **Profile/Stats Screen** - User progress tracking
+   - Wallet address display
+   - Gloves level and progress bar
+   - Total analyses performed
+   - Distance traveled
+   - Total materials collected
+   - Isotopes discovered count
+
+11. **Game Manager** - App lifecycle
    - Offline rewards calculation
    - Save/load system
    - Background/resume handling
 
+12. **HUD System** - Real-time stats display
+   - Charge, lkC, and raw material counts
+   - Profile button with icon
+   - Auto-updating stats
+
 ### 🚧 TODO
 
-1. **Reaction System** - Physical/chemical/nuclear reactions (in Gloves UI)
-2. **Profile/Stats Screen** - User progress tracking
-3. **Pixel Art Assets** - Replace placeholder sprites
-4. **Native Plugins** - Solana wallet & health APIs
-5. **Tutorial System** - First-time user onboarding
-6. **Sound Effects** - Collection, analysis, reactions
-7. **Backend API** - Marketplace listings, transaction validation
+1. **Pixel Art Assets** - Replace placeholder sprites
+2. **Native Plugins** - Solana wallet & health APIs
+3. **Tutorial System** - First-time user onboarding
+4. **Sound Effects** - Collection, analysis, reactions
+5. **Backend API** - Marketplace listings, transaction validation
 
 ## 🔌 Native Plugins Needed
 
@@ -279,8 +298,7 @@ This allows full development in Godot editor before plugin integration.
 - Player sprite animations use placeholders
 - Furniture sprites are colored rectangles
 - No sounds/music
-- Marketplace UI not implemented
-- Reaction system not implemented
+- Native plugins not yet implemented (using mocks)
 
 ## 📚 Resources
 
