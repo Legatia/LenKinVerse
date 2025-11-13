@@ -1,0 +1,129 @@
+[gd_scene load_steps=5 format=3 uid="uid://cwmxqxr6xvpfj"]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/interactable_zone.gd" id="2_interactable"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(32, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_interaction"]
+size = Vector2(80, 80)
+
+[node name="Main" type="Node2D"]
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 360.0
+offset_bottom = 640.0
+color = Color(0.172549, 0.129412, 0.215686, 1)
+
+[node name="FloorTiles" type="ColorRect" parent="Background"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 80.0
+offset_right = 340.0
+offset_bottom = 600.0
+color = Color(0.309804, 0.211765, 0.152941, 1)
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(180, 320)
+script = ExtResource("1_player")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Player"]
+scale = Vector2(2, 2)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="InteractionArea" type="Area2D" parent="Player"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/InteractionArea"]
+shape = SubResource("RectangleShape2D_interaction")
+
+[node name="StorageBox" type="StaticBody2D" parent="." groups=["furniture"]]
+position = Vector2(80, 120)
+script = ExtResource("2_interactable")
+zone_name = "Storage Box"
+scene_to_open = "res://scenes/ui/storage_ui.tscn"
+
+[node name="Sprite2D" type="Sprite2D" parent="StorageBox"]
+modulate = Color(0.545098, 0.341176, 0.172549, 1)
+scale = Vector2(80, 80)
+texture = SubResource("PlaceholderTexture2D_1")
+
+[node name="InteractionArea" type="Area2D" parent="StorageBox"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StorageBox/InteractionArea"]
+shape = SubResource("RectangleShape2D_interaction")
+
+[node name="GlovesStation" type="StaticBody2D" parent="." groups=["furniture"]]
+position = Vector2(180, 320)
+script = ExtResource("2_interactable")
+zone_name = "Alchemy Gloves"
+scene_to_open = "res://scenes/ui/gloves_ui.tscn"
+
+[node name="Sprite2D" type="Sprite2D" parent="GlovesStation"]
+modulate = Color(0.960784, 0.619608, 0.0431373, 1)
+scale = Vector2(80, 80)
+texture = SubResource("PlaceholderTexture2D_2")
+
+[node name="InteractionArea" type="Area2D" parent="GlovesStation"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GlovesStation/InteractionArea"]
+shape = SubResource("RectangleShape2D_interaction")
+
+[node name="Marketplace" type="StaticBody2D" parent="." groups=["furniture"]]
+position = Vector2(280, 520)
+script = ExtResource("2_interactable")
+zone_name = "Marketplace"
+scene_to_open = "res://scenes/ui/marketplace_ui.tscn"
+
+[node name="Sprite2D" type="Sprite2D" parent="Marketplace"]
+modulate = Color(0.305882, 0.698039, 0.85098, 1)
+scale = Vector2(80, 80)
+texture = SubResource("PlaceholderTexture2D_3")
+
+[node name="InteractionArea" type="Area2D" parent="Marketplace"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Marketplace/InteractionArea"]
+shape = SubResource("RectangleShape2D_interaction")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="TopBar" type="Panel" parent="HUD"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 50.0
+grow_horizontal = 2
+
+[node name="ChargeLabel" type="Label" parent="HUD/TopBar"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 80.0
+offset_bottom = 36.0
+text = "⚡ 43"
+horizontal_alignment = 1
+
+[node name="LKCLabel" type="Label" parent="HUD/TopBar"]
+layout_mode = 0
+offset_left = 90.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 36.0
+text = "💰 1,247 lkC"
+
+[node name="RawLabel" type="Label" parent="HUD/TopBar"]
+layout_mode = 0
+offset_left = 210.0
+offset_top = 10.0
+offset_right = 320.0
+offset_bottom = 36.0
+text = "⚫ 798 raw"
+
+[node name="MenuButton" type="Button" parent="HUD/TopBar"]
+layout_mode = 0
+offset_left = 320.0
+offset_top = 10.0
+offset_right = 350.0
+offset_bottom = 40.0
+text = "≡"

@@ -1,0 +1,116 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqwxr6storage"]
+
+[ext_resource type="Script" path="res://scripts/ui/storage_ui.gd" id="1_storage_ui"]
+
+[node name="StorageUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_storage_ui")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -250.0
+offset_right = 150.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 40.0
+grow_horizontal = 2
+text = "📦 STORAGE BOX"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+text = "X"
+
+[node name="TabContainer" type="TabContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 50.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RawMaterials" type="VBoxContainer" parent="Panel/TabContainer"]
+layout_mode = 2
+
+[node name="RawLKCItem" type="HBoxContainer" parent="Panel/TabContainer/RawMaterials"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/TabContainer/RawMaterials/RawLKCItem"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⚫ raw lkC × 798"
+
+[node name="TakeButton" type="Button" parent="Panel/TabContainer/RawMaterials/RawLKCItem"]
+layout_mode = 2
+text = "TAKE ALL"
+
+[node name="Elements" type="VBoxContainer" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="LKCItem" type="HBoxContainer" parent="Panel/TabContainer/Elements"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/TabContainer/Elements/LKCItem"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⚫ lkC × 1,247"
+
+[node name="DepositButton" type="Button" parent="Panel/TabContainer/Elements/LKCItem"]
+layout_mode = 2
+text = "DEPOSIT"
+
+[node name="Isotopes" type="VBoxContainer" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="C14Item" type="HBoxContainer" parent="Panel/TabContainer/Isotopes"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/TabContainer/Isotopes/C14Item"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "💎 C14 × 2 ⏱️4h"
+
+[node name="TakeButton" type="Button" parent="Panel/TabContainer/Isotopes/C14Item"]
+layout_mode = 2
+text = "TAKE"
+
+[connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]
