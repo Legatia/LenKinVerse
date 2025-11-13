@@ -42,9 +42,10 @@ func _physics_process(_delta: float) -> void:
 	# Move character
 	move_and_slide()
 
-	# Check for interaction input
-	if Input.is_action_just_pressed("ui_interact") and nearby_interactable:
-		interact_with_nearby()
+	# NOTE: Interaction is now handled by direct clicks on furniture
+	# Proximity-based interaction disabled for mobile
+	# if Input.is_action_just_pressed("ui_interact") and nearby_interactable:
+	#	interact_with_nearby()
 
 func _on_interaction_area_entered(area: Area2D) -> void:
 	if area.is_in_group("interactable"):

@@ -6,6 +6,9 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(32, 32)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_furniture"]
+size = Vector2(80, 80)
+
 [node name="Main" type="Node2D"]
 
 [node name="Background" type="ColorRect" parent="."]
@@ -43,9 +46,13 @@ scale = Vector2(2.5, 2.5)
 
 [node name="StorageBox" type="StaticBody2D" parent="." groups=["furniture"]]
 position = Vector2(80, 120)
+input_pickable = true
 script = ExtResource("2_interactable")
 zone_name = "Storage Box"
 scene_to_open = "res://scenes/ui/storage_ui.tscn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StorageBox"]
+shape = SubResource("RectangleShape2D_furniture")
 
 [node name="ColorRect" type="ColorRect" parent="StorageBox"]
 offset_left = -40.0
@@ -79,9 +86,13 @@ scale = Vector2(2.5, 2.5)
 
 [node name="GlovesStation" type="StaticBody2D" parent="." groups=["furniture"]]
 position = Vector2(180, 380)
+input_pickable = true
 script = ExtResource("2_interactable")
 zone_name = "Alchemy Gloves"
 scene_to_open = "res://scenes/ui/gloves_ui.tscn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GlovesStation"]
+shape = SubResource("RectangleShape2D_furniture")
 
 [node name="ColorRect" type="ColorRect" parent="GlovesStation"]
 offset_left = -40.0
@@ -115,9 +126,13 @@ scale = Vector2(2.5, 2.5)
 
 [node name="Marketplace" type="StaticBody2D" parent="." groups=["furniture"]]
 position = Vector2(280, 520)
+input_pickable = true
 script = ExtResource("2_interactable")
 zone_name = "Marketplace"
 scene_to_open = "res://scenes/ui/marketplace_ui.tscn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Marketplace"]
+shape = SubResource("RectangleShape2D_furniture")
 
 [node name="ColorRect" type="ColorRect" parent="Marketplace"]
 offset_left = -40.0

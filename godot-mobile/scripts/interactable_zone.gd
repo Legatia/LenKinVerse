@@ -12,6 +12,16 @@ func _ready() -> void:
 	# Add to interactable group
 	interaction_area.add_to_group("interactable")
 
+	# Enable click detection on the furniture itself
+	input_pickable = true
+	input_event.connect(_on_input_event)
+
+func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	# Direct click/touch on furniture
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			interact()
+
 func interact() -> void:
 	print("Interacting with: ", zone_name)
 
