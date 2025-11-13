@@ -31,16 +31,18 @@ Handles minting, updating, and burning of element NFTs.
 **Program ID:** `ELeMNFTxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 
 ### 2. Marketplace Program
-Decentralized marketplace for trading elements.
+Decentralized marketplace for trading elements using alSOL currency.
 
 **Features:**
-- List elements for sale
-- Buy elements
+- List elements for sale (priced in alSOL)
+- Buy elements with alSOL tokens
 - Escrow system for safe trades
 - Cancel listings
 - Price updates
+- alSOL token integration (1:1 backed by SOL)
 
 **Program ID:** `MKTPLCExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+**Currency:** alSOL (Alchemy SOL) - See [ALSOL_TOKEN.md](./ALSOL_TOKEN.md)
 
 ### 3. Registry Program
 Central registry of element definitions and reaction formulas.
@@ -138,19 +140,72 @@ await program.methods
   .rpc();
 ```
 
-### Marketplace (TODO)
+### Marketplace
+
+**Note:** All marketplace transactions use alSOL (in-game currency) backed 1:1 by SOL. See [ALSOL_TOKEN.md](./ALSOL_TOKEN.md) for details.
 
 ```typescript
-// List for sale
+// Create alSOL mint address (deploy once)
+const ALSOL_MINT = new PublicKey("...");
+
+// List element for sale
 await marketplace.methods
-  .createListing(price)
-  .accounts({...})
+  .createListing(
+    new BN(5_000_000_000) // 5 alSOL (with 9 decimals)
+  )
+  .accounts({
+    listingAccount: listingPda,
+    elementAccount: elementPda,
+    elementMint: elementMint,
+    sellerTokenAccount: sellerTokenAccount,
+    escrowTokenAccount: escrowTokenAccount,
+    seller: seller.publicKey,
+    systemProgram: SystemProgram.programId,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    rent: SYSVAR_RENT_PUBKEY,
+  })
   .rpc();
 
-// Buy NFT
+// Buy NFT with alSOL
 await marketplace.methods
   .buyNft()
-  .accounts({...})
+  .accounts({
+    listingAccount: listingPda,
+    escrowTokenAccount: escrowTokenAccount,
+    buyerTokenAccount: buyerTokenAccount,
+    seller: seller.publicKey,
+    alsolMint: ALSOL_MINT,
+    buyerAlsolAccount: buyerAlsolTokenAccount,
+    sellerAlsolAccount: sellerAlsolTokenAccount,
+    buyer: buyer.publicKey,
+    systemProgram: SystemProgram.programId,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    rent: SYSVAR_RENT_PUBKEY,
+  })
+  .signers([buyer])
+  .rpc();
+
+// Update listing price
+await marketplace.methods
+  .updatePrice(new BN(10_000_000_000)) // 10 alSOL
+  .accounts({
+    listingAccount: listingPda,
+    seller: seller.publicKey,
+  })
+  .rpc();
+
+// Cancel listing
+await marketplace.methods
+  .cancelListing()
+  .accounts({
+    listingAccount: listingPda,
+    escrowTokenAccount: escrowTokenAccount,
+    sellerTokenAccount: sellerTokenAccount,
+    seller: seller.publicKey,
+    tokenProgram: TOKEN_PROGRAM_ID,
+  })
   .rpc();
 ```
 
@@ -208,10 +263,12 @@ anchor test --provider.cluster devnet
 - [ ] Metaplex metadata integration
 
 ### Phase 2: Marketplace
-- [ ] Marketplace program
-- [ ] Listing instructions
-- [ ] Escrow system
-- [ ] Integration tests
+- [x] Marketplace program
+- [x] Listing instructions (create, cancel, update price)
+- [x] Escrow system with alSOL payments
+- [x] Integration tests
+- [ ] Deploy alSOL token on devnet
+- [ ] Swap interface (SOL ↔ alSOL)
 
 ### Phase 3: Registry
 - [ ] Registry program
