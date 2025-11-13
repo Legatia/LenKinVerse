@@ -12,7 +12,7 @@ config_version=5
 
 config/name="LenKinVerse"
 config/description="Alchemy lab meets blockchain - Solana Edition"
-run/main_scene="res://scenes/ui/login_screen.tscn"
+run/main_scene="res://scenes/ui/world_selection.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 boot_splash/bg_color=Color(0.172549, 0.129412, 0.215686, 1)
 boot_splash/show_image=false

@@ -83,9 +83,5 @@ func _on_world_selected(world_id: String) -> void:
 	transition_to_game()
 
 func transition_to_game() -> void:
-	# Check if this is first launch (to show tutorial)
-	if GameManager.is_first_launch:
-		get_tree().change_scene_to_file("res://scenes/main.tscn")
-	else:
-		# Calculate offline rewards first
-		get_tree().change_scene_to_file("res://scenes/ui/offline_rewards.tscn")
+	# After world selection, proceed to wallet login
+	get_tree().change_scene_to_file("res://scenes/ui/login_screen.tscn")

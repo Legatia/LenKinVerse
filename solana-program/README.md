@@ -234,12 +234,13 @@ await marketplace.methods
   .rpc();
 ```
 
-**Swap LKC for alSOL (1M:1 ratio):**
+**Swap LKC for alSOL (1M:1 ratio, max 1 alSOL/week):**
 ```typescript
-// Player buys 1 alSOL with 1 million LKC
+// Player buys 0.123 alSOL with 123,450 LKC (fractional, rounded down)
 await marketplace.methods
-  .swapLkcForAlsol(new BN(1_000_000)) // 1M LKC
+  .swapLkcForAlsol(new BN(123_450)) // 123,450 LKC → 0.123 alSOL
   .accounts({
+    swapHistory: swapHistoryPda, // PDA tracking weekly limits
     lkcMint: LKC_MINT_ADDRESS,
     buyerLkcAccount: buyerLkcAccount,
     devLkcVault: devLkcVault,
@@ -256,6 +257,10 @@ await marketplace.methods
   })
   .signers([treasuryAuthority])
   .rpc();
+
+// Weekly limit: 1 alSOL max per user
+// Minimum: 0.001 alSOL (1,000 LKC)
+// Precision: Rounded down to 3 decimals
 ```
 
 ## 🔒 Security

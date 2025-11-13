@@ -205,18 +205,66 @@ pub mod marketplace {
 
     /// Swap LKC for alSOL (1,000,000:1 ratio)
     ///
-    /// Transfers 1,000,000 LKC to dev vault and transfers 1 alSOL from treasury to buyer.
+    /// Transfers LKC to dev vault and transfers alSOL from treasury to buyer.
+    /// Weekly limit: 1 alSOL per user
+    /// Minimum: 0.001 alSOL, rounded down to 3 decimal places
     pub fn swap_lkc_for_alsol(
         ctx: Context<SwapLkcForAlsol>,
-        lkc_amount: u64, // Amount of LKC tokens (must be multiple of 1M)
+        lkc_amount: u64, // Amount of LKC tokens
     ) -> Result<()> {
         const LKC_PER_ALSOL: u64 = 1_000_000; // 1 million LKC = 1 alSOL
+        const MIN_ALSOL_LAMPORTS: u64 = 1_000_000; // 0.001 alSOL minimum (with 9 decimals)
+        const WEEK_IN_SECONDS: i64 = 7 * 24 * 60 * 60; // 7 days
+        const MAX_WEEKLY_ALSOL: u64 = 1_000_000_000; // 1 alSOL per week (with 9 decimals)
 
         require!(lkc_amount > 0, MarketplaceError::InvalidAmount);
-        require!(lkc_amount % LKC_PER_ALSOL == 0, MarketplaceError::InvalidLkcAmount);
 
-        // Calculate alSOL amount (1M LKC = 1 alSOL with 9 decimals)
-        let alsol_amount = (lkc_amount / LKC_PER_ALSOL) * 1_000_000_000; // Convert to alSOL with 9 decimals
+        // Calculate alSOL amount: (LKC / 1M) * 1e9, then round down to 3 decimals
+        // 1M LKC = 1 alSOL = 1e9 lamports
+        // For fractional: multiply first, then divide to maintain precision
+        let alsol_raw = (lkc_amount as u128)
+            .checked_mul(1_000_000_000) // Convert to alSOL lamports
+            .unwrap()
+            .checked_div(LKC_PER_ALSOL as u128)
+            .unwrap() as u64;
+
+        // Round down to 3 decimal places (1e6 lamports = 0.001 alSOL)
+        // Truncate everything below 0.001 alSOL
+        let alsol_amount = (alsol_raw / 1_000_000) * 1_000_000;
+
+        require!(
+            alsol_amount >= MIN_ALSOL_LAMPORTS,
+            MarketplaceError::AmountTooSmall
+        );
+
+        // Check weekly limit
+        let swap_history = &mut ctx.accounts.swap_history;
+        let current_time = Clock::get()?.unix_timestamp;
+
+        // Reset weekly counter if a week has passed
+        if current_time - swap_history.week_start >= WEEK_IN_SECONDS {
+            swap_history.week_start = current_time;
+            swap_history.weekly_alsol_swapped = 0;
+        }
+
+        // Check if adding this swap would exceed weekly limit
+        let new_weekly_total = swap_history
+            .weekly_alsol_swapped
+            .checked_add(alsol_amount)
+            .unwrap();
+
+        require!(
+            new_weekly_total <= MAX_WEEKLY_ALSOL,
+            MarketplaceError::WeeklyLimitExceeded
+        );
+
+        // Update swap history
+        swap_history.weekly_alsol_swapped = new_weekly_total;
+        swap_history.total_alsol_swapped = swap_history
+            .total_alsol_swapped
+            .checked_add(alsol_amount)
+            .unwrap();
+        swap_history.last_swap_time = current_time;
 
         // Transfer LKC from buyer to dev vault
         let cpi_accounts = Transfer {
@@ -239,9 +287,10 @@ pub mod marketplace {
         token::transfer(cpi_ctx, alsol_amount)?;
 
         msg!(
-            "Swapped {} LKC for {} alSOL",
+            "Swapped {} LKC for {} alSOL (weekly: {}/1.0)",
             lkc_amount,
-            alsol_amount as f64 / 1e9
+            alsol_amount as f64 / 1e9,
+            new_weekly_total as f64 / 1e9
         );
 
         Ok(())
@@ -438,6 +487,15 @@ pub struct SwapSolForAlsol<'info> {
 
 #[derive(Accounts)]
 pub struct SwapLkcForAlsol<'info> {
+    #[account(
+        init_if_needed,
+        payer = buyer,
+        space = 8 + SwapHistory::INIT_SPACE,
+        seeds = [b"swap_history", buyer.key().as_ref()],
+        bump
+    )]
+    pub swap_history: Account<'info, SwapHistory>,
+
     pub lkc_mint: Account<'info, Mint>,
 
     #[account(
@@ -487,6 +545,15 @@ pub struct SwapLkcForAlsol<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 
+#[account]
+#[derive(InitSpace)]
+pub struct SwapHistory {
+    pub week_start: i64,           // Unix timestamp of current week start
+    pub weekly_alsol_swapped: u64, // alSOL swapped this week (in lamports)
+    pub total_alsol_swapped: u64,  // Total alSOL swapped ever (in lamports)
+    pub last_swap_time: i64,       // Last swap timestamp
+}
+
 #[error_code]
 pub enum MarketplaceError {
     #[msg("Price must be greater than 0")]
@@ -499,4 +566,8 @@ pub enum MarketplaceError {
     InvalidAmount,
     #[msg("LKC amount must be a multiple of 1,000,000")]
     InvalidLkcAmount,
+    #[msg("Weekly limit of 1 alSOL exceeded")]
+    WeeklyLimitExceeded,
+    #[msg("Amount too small, minimum is 0.001 alSOL")]
+    AmountTooSmall,
 }

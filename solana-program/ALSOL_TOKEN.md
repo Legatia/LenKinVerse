@@ -34,9 +34,12 @@ Players can acquire alSOL through:
 
 2. **Purchase with LKC:** Exchange LKC tokens for alSOL
    - Rate: **1,000,000 LKC = 1 alSOL** (1M:1)
+   - **Weekly Limit:** Maximum 1 alSOL per user per week
+   - **Minimum Order:** 0.001 alSOL (1,000 LKC)
+   - **Precision:** Rounded down to 3 decimal places
+   - **Example:** 123,450 LKC = 0.12345 alSOL → 0.123 alSOL (rounded)
    - LKC sent to dev vault
    - Implemented via `swap_lkc_for_alsol` instruction
-   - Must swap in multiples of 1M LKC
 
 3. **Rewards:** Earn alSOL through gameplay (future feature)
 
@@ -141,15 +144,16 @@ await marketplace.methods
   .rpc();
 ```
 
-**Swap LKC for alSOL (1M:1 ratio):**
+**Swap LKC for alSOL (1M:1 ratio with weekly limits):**
 
 ```typescript
-// Swap 10M LKC for 10 alSOL
+// Swap 123,450 LKC for ~0.123 alSOL (fractional)
 await marketplace.methods
   .swapLkcForAlsol(
-    new BN(10_000_000) // 10 million LKC
+    new BN(123_450) // 123,450 LKC = 0.12345 alSOL → 0.123 alSOL (rounded down)
   )
   .accounts({
+    swapHistory: swapHistoryPda, // PDA tracking weekly limits
     lkcMint: LKC_MINT_ADDRESS,
     buyerLkcAccount: buyerLkcAccount,
     devLkcVault: devLkcVault,
@@ -169,9 +173,13 @@ await marketplace.methods
 ```
 
 **Key Points:**
-- SOL swap is 1:1 (1 SOL = 1 alSOL)
+- SOL swap is 1:1 (1 SOL = 1 alSOL), no limits
 - LKC swap is 1,000,000:1 (1M LKC = 1 alSOL)
-- LKC amounts must be multiples of 1M
+- **LKC Weekly Limit:** Maximum 1 alSOL per user per week
+- **LKC Minimum:** 0.001 alSOL (1,000 LKC minimum)
+- **LKC Precision:** Rounded down to 3 decimal places (e.g., 0.12399 → 0.123)
+- Fractional amounts supported (no longer requires multiples of 1M)
+- Weekly limit tracked per-user via `swap_history` PDA
 - All swaps require treasury authority signature
 - SOL/LKC sent to dev vault, alSOL transferred from treasury
 

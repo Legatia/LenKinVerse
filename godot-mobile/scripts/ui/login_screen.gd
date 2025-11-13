@@ -50,15 +50,11 @@ func request_health_permissions() -> void:
 		# Still allow playing without health data
 
 func transition_to_main_game() -> void:
-	# Check if world has been selected
-	if not WorldManager.has_world_selected():
-		# Show world selection screen
-		get_tree().change_scene_to_file("res://scenes/ui/world_selection.tscn")
+	# World should already be selected before reaching this screen
+	# Proceed directly to game
+	if GameManager.is_first_launch:
+		# Go directly to main room
+		get_tree().change_scene_to_file("res://scenes/main.tscn")
 	else:
-		# World already selected, proceed to game
-		if GameManager.is_first_launch:
-			# Go directly to main room
-			get_tree().change_scene_to_file("res://scenes/main.tscn")
-		else:
-			# Calculate offline rewards first
-			get_tree().change_scene_to_file("res://scenes/ui/offline_rewards.tscn")
+		# Calculate offline rewards first
+		get_tree().change_scene_to_file("res://scenes/ui/offline_rewards.tscn")

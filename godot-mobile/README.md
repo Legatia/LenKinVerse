@@ -39,18 +39,20 @@ godot-mobile/
 
 ### ✅ Implemented
 
-1. **Login Screen** - Wallet authentication
-   - Solana wallet connection (Phantom/Solflare)
-   - Health tracking permissions request
-   - First-time user flow
-
-2. **World/Blockchain Selection** - Multi-chain support
+1. **World/Blockchain Selection** - Multi-chain support (First Screen)
    - Choose between Solana, Ethereum-Base, or Sui
    - Beautiful world cards with descriptions
    - Color-coded blockchain branding
    - Persistent world selection
    - Displayed in profile screen
    - Foundation for multi-chain expansion
+   - **Must be selected before wallet login**
+
+2. **Login Screen** - Wallet authentication (Second Screen)
+   - Solana wallet connection (Phantom/Solflare)
+   - Health tracking permissions request
+   - First-time user flow
+   - Appears after world selection
 
 3. **Offline Rewards Modal** - Welcome back screen
    - Distance traveled calculation
