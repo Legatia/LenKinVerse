@@ -25,6 +25,7 @@ InventoryManager="*res://autoload/inventory_manager.gd"
 WalletManager="*res://autoload/wallet_manager.gd"
 HealthManager="*res://autoload/health_manager.gd"
 ReactionManager="*res://autoload/reaction_manager.gd"
+TutorialManager="*res://autoload/tutorial_manager.gd"
 
 [display]
 
