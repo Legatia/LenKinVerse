@@ -162,6 +162,90 @@ pub mod marketplace {
 
         Ok(())
     }
+
+    /// Swap SOL for alSOL (1:1 ratio)
+    ///
+    /// Transfers SOL to dev vault and transfers alSOL from treasury to buyer.
+    pub fn swap_sol_for_alsol(
+        ctx: Context<SwapSolForAlsol>,
+        sol_amount: u64, // Amount in lamports
+    ) -> Result<()> {
+        require!(sol_amount > 0, MarketplaceError::InvalidAmount);
+
+        // Transfer SOL from buyer to dev vault
+        let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
+            &ctx.accounts.buyer.key(),
+            &ctx.accounts.dev_vault.key(),
+            sol_amount,
+        );
+
+        anchor_lang::solana_program::program::invoke(
+            &transfer_ix,
+            &[
+                ctx.accounts.buyer.to_account_info(),
+                ctx.accounts.dev_vault.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+        )?;
+
+        // Transfer alSOL from treasury to buyer (1:1 ratio, same amount with 9 decimals)
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.treasury_alsol_account.to_account_info(),
+            to: ctx.accounts.buyer_alsol_account.to_account_info(),
+            authority: ctx.accounts.treasury_authority.to_account_info(),
+        };
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        token::transfer(cpi_ctx, sol_amount)?; // 1 lamport SOL = 1 lamport alSOL
+
+        msg!("Swapped {} SOL for {} alSOL", sol_amount as f64 / 1e9, sol_amount as f64 / 1e9);
+
+        Ok(())
+    }
+
+    /// Swap LKC for alSOL (1,000,000:1 ratio)
+    ///
+    /// Transfers 1,000,000 LKC to dev vault and transfers 1 alSOL from treasury to buyer.
+    pub fn swap_lkc_for_alsol(
+        ctx: Context<SwapLkcForAlsol>,
+        lkc_amount: u64, // Amount of LKC tokens (must be multiple of 1M)
+    ) -> Result<()> {
+        const LKC_PER_ALSOL: u64 = 1_000_000; // 1 million LKC = 1 alSOL
+
+        require!(lkc_amount > 0, MarketplaceError::InvalidAmount);
+        require!(lkc_amount % LKC_PER_ALSOL == 0, MarketplaceError::InvalidLkcAmount);
+
+        // Calculate alSOL amount (1M LKC = 1 alSOL with 9 decimals)
+        let alsol_amount = (lkc_amount / LKC_PER_ALSOL) * 1_000_000_000; // Convert to alSOL with 9 decimals
+
+        // Transfer LKC from buyer to dev vault
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.buyer_lkc_account.to_account_info(),
+            to: ctx.accounts.dev_lkc_vault.to_account_info(),
+            authority: ctx.accounts.buyer.to_account_info(),
+        };
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        token::transfer(cpi_ctx, lkc_amount)?;
+
+        // Transfer alSOL from treasury to buyer
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.treasury_alsol_account.to_account_info(),
+            to: ctx.accounts.buyer_alsol_account.to_account_info(),
+            authority: ctx.accounts.treasury_authority.to_account_info(),
+        };
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        token::transfer(cpi_ctx, alsol_amount)?;
+
+        msg!(
+            "Swapped {} LKC for {} alSOL",
+            lkc_amount,
+            alsol_amount as f64 / 1e9
+        );
+
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -317,6 +401,92 @@ pub struct ListingAccount {
     pub bump: u8,
 }
 
+#[derive(Accounts)]
+pub struct SwapSolForAlsol<'info> {
+    /// CHECK: Dev vault receiving SOL
+    #[account(mut)]
+    pub dev_vault: UncheckedAccount<'info>,
+
+    pub alsol_mint: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        token::mint = alsol_mint,
+        token::authority = treasury_authority,
+    )]
+    pub treasury_alsol_account: Account<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
+        payer = buyer,
+        associated_token::mint = alsol_mint,
+        associated_token::authority = buyer,
+    )]
+    pub buyer_alsol_account: Account<'info, TokenAccount>,
+
+    /// CHECK: Treasury authority (dev team wallet or multisig)
+    pub treasury_authority: Signer<'info>,
+
+    #[account(mut)]
+    pub buyer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub rent: Sysvar<'info, Rent>,
+}
+
+#[derive(Accounts)]
+pub struct SwapLkcForAlsol<'info> {
+    pub lkc_mint: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        associated_token::mint = lkc_mint,
+        associated_token::authority = buyer,
+    )]
+    pub buyer_lkc_account: Account<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
+        payer = buyer,
+        associated_token::mint = lkc_mint,
+        associated_token::authority = dev_vault_authority,
+    )]
+    pub dev_lkc_vault: Account<'info, TokenAccount>,
+
+    /// CHECK: Dev vault authority
+    pub dev_vault_authority: UncheckedAccount<'info>,
+
+    pub alsol_mint: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        token::mint = alsol_mint,
+        token::authority = treasury_authority,
+    )]
+    pub treasury_alsol_account: Account<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
+        payer = buyer,
+        associated_token::mint = alsol_mint,
+        associated_token::authority = buyer,
+    )]
+    pub buyer_alsol_account: Account<'info, TokenAccount>,
+
+    /// CHECK: Treasury authority (dev team wallet or multisig)
+    pub treasury_authority: Signer<'info>,
+
+    #[account(mut)]
+    pub buyer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub rent: Sysvar<'info, Rent>,
+}
+
 #[error_code]
 pub enum MarketplaceError {
     #[msg("Price must be greater than 0")]
@@ -325,4 +495,8 @@ pub enum MarketplaceError {
     ListingNotActive,
     #[msg("Insufficient balance")]
     InsufficientBalance,
+    #[msg("Amount must be greater than 0")]
+    InvalidAmount,
+    #[msg("LKC amount must be a multiple of 1,000,000")]
+    InvalidLkcAmount,
 }

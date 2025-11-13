@@ -39,6 +39,8 @@ Decentralized marketplace for trading elements using alSOL currency.
 - Escrow system for safe trades
 - Cancel listings
 - Price updates
+- **Swap SOL for alSOL (1:1 ratio)**
+- **Swap LKC for alSOL (1M:1 ratio)**
 - alSOL token integration (1:1 backed by SOL)
 
 **Program ID:** `MKTPLCExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
@@ -209,6 +211,53 @@ await marketplace.methods
   .rpc();
 ```
 
+### Swap (alSOL Purchase)
+
+**Swap SOL for alSOL (1:1 ratio):**
+```typescript
+// Player buys 1 alSOL with 1 SOL
+await marketplace.methods
+  .swapSolForAlsol(new BN(1_000_000_000)) // 1 SOL
+  .accounts({
+    devVault: DEV_VAULT_ADDRESS,
+    alsolMint: ALSOL_MINT_ADDRESS,
+    treasuryAlsolAccount: treasuryAlsolAccount,
+    buyerAlsolAccount: buyerAlsolAccount,
+    treasuryAuthority: treasuryAuthority.publicKey,
+    buyer: buyer.publicKey,
+    systemProgram: SystemProgram.programId,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    rent: SYSVAR_RENT_PUBKEY,
+  })
+  .signers([treasuryAuthority])
+  .rpc();
+```
+
+**Swap LKC for alSOL (1M:1 ratio):**
+```typescript
+// Player buys 1 alSOL with 1 million LKC
+await marketplace.methods
+  .swapLkcForAlsol(new BN(1_000_000)) // 1M LKC
+  .accounts({
+    lkcMint: LKC_MINT_ADDRESS,
+    buyerLkcAccount: buyerLkcAccount,
+    devLkcVault: devLkcVault,
+    devVaultAuthority: DEV_VAULT_ADDRESS,
+    alsolMint: ALSOL_MINT_ADDRESS,
+    treasuryAlsolAccount: treasuryAlsolAccount,
+    buyerAlsolAccount: buyerAlsolAccount,
+    treasuryAuthority: treasuryAuthority.publicKey,
+    buyer: buyer.publicKey,
+    systemProgram: SystemProgram.programId,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    rent: SYSVAR_RENT_PUBKEY,
+  })
+  .signers([treasuryAuthority])
+  .rpc();
+```
+
 ## 🔒 Security
 
 ### Audits
@@ -266,9 +315,11 @@ anchor test --provider.cluster devnet
 - [x] Marketplace program
 - [x] Listing instructions (create, cancel, update price)
 - [x] Escrow system with alSOL payments
-- [x] Integration tests
+- [x] Swap SOL for alSOL (1:1 ratio)
+- [x] Swap LKC for alSOL (1M:1 ratio)
+- [x] Integration tests (marketplace + swaps)
 - [ ] Deploy alSOL token on devnet
-- [ ] Swap interface (SOL ↔ alSOL)
+- [ ] Create LKC token for in-game use
 
 ### Phase 3: Registry
 - [ ] Registry program

@@ -76,7 +76,11 @@ func load_tutorial_state() -> void:
 			var data = json.data
 			is_tutorial_completed = data.get("tutorial_completed", false)
 			current_step = data.get("current_step", 0)
-			completed_steps = data.get("completed_steps", [])
+			var loaded_steps = data.get("completed_steps", [])
+			completed_steps.clear()
+			for step in loaded_steps:
+				if step is String:
+					completed_steps.append(step)
 
 func save_tutorial_state() -> void:
 	var save_data = {

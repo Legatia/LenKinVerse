@@ -489,4 +489,247 @@ describe("marketplace", () => {
       }
     });
   });
+
+  describe("alSOL Swaps", () => {
+    let devVault: Keypair;
+    let treasuryAuthority: Keypair;
+    let treasuryAlsolAccount: PublicKey;
+    let lkcMint: PublicKey;
+    let buyerLkcAccount: PublicKey;
+
+    before(async () => {
+      // Create dev vault keypair
+      devVault = Keypair.generate();
+
+      // Create treasury authority
+      treasuryAuthority = Keypair.generate();
+
+      // Airdrop SOL to treasury authority for transaction fees
+      const airdropSig = await provider.connection.requestAirdrop(
+        treasuryAuthority.publicKey,
+        5 * anchor.web3.LAMPORTS_PER_SOL
+      );
+      await provider.connection.confirmTransaction(airdropSig);
+
+      // Create treasury alSOL account
+      const treasuryAlsolAccountInfo = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        owner.payer,
+        alsolMint,
+        treasuryAuthority.publicKey
+      );
+      treasuryAlsolAccount = treasuryAlsolAccountInfo.address;
+
+      // Mint 10,000 alSOL to treasury for testing swaps
+      await mintTo(
+        provider.connection,
+        owner.payer,
+        alsolMint,
+        treasuryAlsolAccount,
+        owner.publicKey,
+        10000 * 1e9 // 10,000 alSOL
+      );
+
+      console.log("Minted 10,000 alSOL to treasury");
+
+      // Create LKC token mint
+      lkcMint = await createMint(
+        provider.connection,
+        owner.payer,
+        owner.publicKey,
+        null,
+        0 // LKC has no decimals
+      );
+
+      // Create and fund buyer's LKC account
+      const buyerLkcAccountInfo = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        owner.payer,
+        lkcMint,
+        owner.publicKey
+      );
+      buyerLkcAccount = buyerLkcAccountInfo.address;
+
+      // Mint 100M LKC to buyer for testing (enough for 100 alSOL)
+      await mintTo(
+        provider.connection,
+        owner.payer,
+        lkcMint,
+        buyerLkcAccount,
+        owner.publicKey,
+        100_000_000 // 100 million LKC
+      );
+
+      console.log("Created LKC mint and funded buyer with 100M LKC");
+    });
+
+    it("Swaps SOL for alSOL (1:1 ratio)", async () => {
+      const solAmount = new anchor.BN(1 * 1e9); // 1 SOL
+
+      // Get buyer's initial alSOL balance
+      const buyerAlsolAccountInfo = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        owner.payer,
+        alsolMint,
+        owner.publicKey
+      );
+      const buyerAlsolAccountBefore = await provider.connection.getTokenAccountBalance(
+        buyerAlsolAccountInfo.address
+      );
+
+      // Get dev vault SOL balance before
+      const devVaultBefore = await provider.connection.getBalance(
+        devVault.publicKey
+      );
+
+      // Swap SOL for alSOL
+      const tx = await marketplace.methods
+        .swapSolForAlsol(solAmount)
+        .accounts({
+          devVault: devVault.publicKey,
+          alsolMint: alsolMint,
+          treasuryAlsolAccount: treasuryAlsolAccount,
+          buyerAlsolAccount: buyerAlsolAccountInfo.address,
+          treasuryAuthority: treasuryAuthority.publicKey,
+          buyer: owner.publicKey,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        })
+        .signers([treasuryAuthority])
+        .rpc();
+
+      console.log("Swap SOL for alSOL transaction signature:", tx);
+
+      // Verify dev vault received SOL
+      const devVaultAfter = await provider.connection.getBalance(
+        devVault.publicKey
+      );
+      expect(devVaultAfter - devVaultBefore).to.equal(solAmount.toNumber());
+
+      // Verify buyer received alSOL
+      const buyerAlsolAccountAfter = await provider.connection.getTokenAccountBalance(
+        buyerAlsolAccountInfo.address
+      );
+      const alsolReceived =
+        buyerAlsolAccountAfter.value.uiAmount -
+        buyerAlsolAccountBefore.value.uiAmount;
+      expect(alsolReceived).to.equal(1); // 1 alSOL
+    });
+
+    it("Swaps LKC for alSOL (1M:1 ratio)", async () => {
+      const lkcAmount = new anchor.BN(10_000_000); // 10 million LKC
+      const expectedAlsol = 10; // Should get 10 alSOL
+
+      // Get buyer's initial alSOL balance
+      const buyerAlsolAccountInfo = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        owner.payer,
+        alsolMint,
+        owner.publicKey
+      );
+      const buyerAlsolAccountBefore = await provider.connection.getTokenAccountBalance(
+        buyerAlsolAccountInfo.address
+      );
+
+      // Get buyer's initial LKC balance
+      const buyerLkcBefore = await provider.connection.getTokenAccountBalance(
+        buyerLkcAccount
+      );
+
+      // Create dev LKC vault
+      const devLkcVault = await getAssociatedTokenAddress(
+        lkcMint,
+        devVault.publicKey
+      );
+
+      // Swap LKC for alSOL
+      const tx = await marketplace.methods
+        .swapLkcForAlsol(lkcAmount)
+        .accounts({
+          lkcMint: lkcMint,
+          buyerLkcAccount: buyerLkcAccount,
+          devLkcVault: devLkcVault,
+          devVaultAuthority: devVault.publicKey,
+          alsolMint: alsolMint,
+          treasuryAlsolAccount: treasuryAlsolAccount,
+          buyerAlsolAccount: buyerAlsolAccountInfo.address,
+          treasuryAuthority: treasuryAuthority.publicKey,
+          buyer: owner.publicKey,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        })
+        .signers([treasuryAuthority])
+        .rpc();
+
+      console.log("Swap LKC for alSOL transaction signature:", tx);
+
+      // Verify buyer sent LKC
+      const buyerLkcAfter = await provider.connection.getTokenAccountBalance(
+        buyerLkcAccount
+      );
+      const lkcSpent = buyerLkcBefore.value.uiAmount - buyerLkcAfter.value.uiAmount;
+      expect(lkcSpent).to.equal(lkcAmount.toNumber());
+
+      // Verify buyer received alSOL
+      const buyerAlsolAccountAfter = await provider.connection.getTokenAccountBalance(
+        buyerAlsolAccountInfo.address
+      );
+      const alsolReceived =
+        buyerAlsolAccountAfter.value.uiAmount -
+        buyerAlsolAccountBefore.value.uiAmount;
+      expect(alsolReceived).to.equal(expectedAlsol);
+
+      // Verify dev vault received LKC
+      const devLkcVaultBalance = await provider.connection.getTokenAccountBalance(
+        devLkcVault
+      );
+      expect(devLkcVaultBalance.value.uiAmount).to.equal(lkcAmount.toNumber());
+    });
+
+    it("Rejects LKC swap with invalid amount (not multiple of 1M)", async () => {
+      const lkcAmount = new anchor.BN(1_500_000); // 1.5 million (invalid)
+
+      const buyerAlsolAccountInfo = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        owner.payer,
+        alsolMint,
+        owner.publicKey
+      );
+
+      const devLkcVault = await getAssociatedTokenAddress(
+        lkcMint,
+        devVault.publicKey
+      );
+
+      try {
+        await marketplace.methods
+          .swapLkcForAlsol(lkcAmount)
+          .accounts({
+            lkcMint: lkcMint,
+            buyerLkcAccount: buyerLkcAccount,
+            devLkcVault: devLkcVault,
+            devVaultAuthority: devVault.publicKey,
+            alsolMint: alsolMint,
+            treasuryAlsolAccount: treasuryAlsolAccount,
+            buyerAlsolAccount: buyerAlsolAccountInfo.address,
+            treasuryAuthority: treasuryAuthority.publicKey,
+            buyer: owner.publicKey,
+            systemProgram: SystemProgram.programId,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+          })
+          .signers([treasuryAuthority])
+          .rpc();
+
+        expect.fail("Expected transaction to fail with invalid LKC amount");
+      } catch (error) {
+        expect(error.message).to.include("InvalidLkcAmount");
+      }
+    });
+  });
 });

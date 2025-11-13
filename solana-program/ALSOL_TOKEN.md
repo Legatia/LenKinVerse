@@ -27,11 +27,20 @@ The alSOL token is minted by the development team with a controlled mint authori
 
 Players can acquire alSOL through:
 
-1. **Purchase:** Exchange SOL for alSOL via in-game swap interface
-   - Rate: 1 SOL = 1 alSOL (minus small transaction fees)
-   - Dev team provides liquidity
-2. **Rewards:** Earn alSOL through gameplay (future feature)
-3. **Trading:** Sell element NFTs on marketplace for alSOL
+1. **Purchase with SOL:** Exchange SOL for alSOL via in-game swap interface
+   - Rate: **1 SOL = 1 alSOL** (1:1)
+   - SOL sent to dev vault
+   - Implemented via `swap_sol_for_alsol` instruction
+
+2. **Purchase with LKC:** Exchange LKC tokens for alSOL
+   - Rate: **1,000,000 LKC = 1 alSOL** (1M:1)
+   - LKC sent to dev vault
+   - Implemented via `swap_lkc_for_alsol` instruction
+   - Must swap in multiples of 1M LKC
+
+3. **Rewards:** Earn alSOL through gameplay (future feature)
+
+4. **Trading:** Sell element NFTs on marketplace for alSOL
 
 ### Redemption
 
@@ -103,6 +112,68 @@ await marketplace.methods
   })
   .rpc();
 ```
+
+### Swap Integration
+
+Players can swap SOL or LKC for alSOL directly in the marketplace:
+
+**Swap SOL for alSOL (1:1 ratio):**
+
+```typescript
+// Swap 5 SOL for 5 alSOL
+await marketplace.methods
+  .swapSolForAlsol(
+    new BN(5 * 1e9) // 5 SOL in lamports
+  )
+  .accounts({
+    devVault: DEV_VAULT_ADDRESS,
+    alsolMint: ALSOL_MINT_ADDRESS,
+    treasuryAlsolAccount: TREASURY_ALSOL_ACCOUNT,
+    buyerAlsolAccount: buyerAlsolAccount,
+    treasuryAuthority: treasuryAuthority.publicKey,
+    buyer: buyer.publicKey,
+    systemProgram: SystemProgram.programId,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    rent: SYSVAR_RENT_PUBKEY,
+  })
+  .signers([treasuryAuthority])
+  .rpc();
+```
+
+**Swap LKC for alSOL (1M:1 ratio):**
+
+```typescript
+// Swap 10M LKC for 10 alSOL
+await marketplace.methods
+  .swapLkcForAlsol(
+    new BN(10_000_000) // 10 million LKC
+  )
+  .accounts({
+    lkcMint: LKC_MINT_ADDRESS,
+    buyerLkcAccount: buyerLkcAccount,
+    devLkcVault: devLkcVault,
+    devVaultAuthority: DEV_VAULT_ADDRESS,
+    alsolMint: ALSOL_MINT_ADDRESS,
+    treasuryAlsolAccount: TREASURY_ALSOL_ACCOUNT,
+    buyerAlsolAccount: buyerAlsolAccount,
+    treasuryAuthority: treasuryAuthority.publicKey,
+    buyer: buyer.publicKey,
+    systemProgram: SystemProgram.programId,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    rent: SYSVAR_RENT_PUBKEY,
+  })
+  .signers([treasuryAuthority])
+  .rpc();
+```
+
+**Key Points:**
+- SOL swap is 1:1 (1 SOL = 1 alSOL)
+- LKC swap is 1,000,000:1 (1M LKC = 1 alSOL)
+- LKC amounts must be multiples of 1M
+- All swaps require treasury authority signature
+- SOL/LKC sent to dev vault, alSOL transferred from treasury
 
 ## Security Considerations
 
