@@ -1,6 +1,9 @@
 extends Node
 ## Manages Solana wallet connection via native mobile wallet adapter
-## Requires native plugin for iOS/Android
+## Requires SolanaWallet GDExtension plugin for iOS/Android
+##
+## Plugin Specification: docs/SOLANA_PLUGIN_SPEC.md
+## Implementation Guide: docs/SOLANA_PLUGIN_IMPLEMENTATION.md
 
 signal wallet_connected(address: String)
 signal wallet_disconnected()
@@ -11,105 +14,154 @@ var is_connected: bool = false
 var wallet_address: String = ""
 var public_key: String = ""
 
-# This will interface with native Solana Mobile Wallet Adapter plugin
+# Reference to native SolanaWallet singleton (if available)
 var native_plugin = null
+var use_mock_mode: bool = false
 
 func _ready() -> void:
-	# Try to load native plugin
-	if Engine.has_singleton("SolanaMobileWallet"):
-		native_plugin = Engine.get_singleton("SolanaMobileWallet")
-		print("Solana wallet plugin loaded")
+	# Try to load native SolanaWallet plugin
+	if Engine.has_singleton("SolanaWallet"):
+		native_plugin = Engine.get_singleton("SolanaWallet")
+		use_mock_mode = false
+		print("✅ SolanaWallet plugin loaded - using native implementation")
+
+		# Connect to plugin signals
+		native_plugin.wallet_connected.connect(_on_native_wallet_connected)
+		native_plugin.wallet_connection_failed.connect(_on_native_connection_failed)
+		native_plugin.transaction_signed.connect(_on_native_transaction_signed)
+		native_plugin.transaction_failed.connect(_on_native_transaction_failed)
+		native_plugin.wallet_disconnected.connect(_on_native_wallet_disconnected)
 	else:
-		push_warning("Solana wallet plugin not found - using mock mode")
+		use_mock_mode = true
+		push_warning("⚠️ SolanaWallet plugin not found - using MOCK mode for development")
+		push_warning("   See docs/SOLANA_PLUGIN_SPEC.md for plugin implementation details")
 
 	load_wallet_data()
 
-## Connect to Phantom/Solflare wallet
+## Connect to Phantom/Solflare/other Solana mobile wallet
 func connect_wallet() -> void:
-	if native_plugin:
-		# Call native plugin
-		var result = await native_plugin.authorize({
-			"cluster": "mainnet-beta",
+	if not use_mock_mode and native_plugin:
+		# Use native plugin (signal-based API)
+		native_plugin.authorize({
+			"cluster": WorldManager.get_current_world().get("cluster", "mainnet-beta"),
 			"app_name": "LenKinVerse",
-			"app_uri": "https://lenkinverse.com"
+			"app_icon": "res://icon.svg"
 		})
-
-		if result.success:
-			wallet_address = result.address
-			public_key = result.public_key
-			is_connected = true
-			save_wallet_data()
-			wallet_connected.emit(wallet_address)
-		else:
-			push_error("Wallet connection failed: " + str(result.error))
 	else:
-		# Mock connection for testing
+		# Mock implementation for development
 		_mock_connect_wallet()
 
-## Mock wallet connection for testing without plugin
+## Disconnect from wallet
+func disconnect_wallet() -> void:
+	if not use_mock_mode and native_plugin:
+		native_plugin.disconnect()
+	else:
+		_mock_disconnect_wallet()
+
+## Sign and send a transaction
+func sign_transaction(transaction: Dictionary) -> void:
+	if not use_mock_mode and native_plugin:
+		native_plugin.sign_transaction(transaction)
+	else:
+		_mock_sign_transaction(transaction)
+
+## Sign a message for verification
+func sign_message(message: String) -> void:
+	if not use_mock_mode and native_plugin:
+		native_plugin.sign_message(message)
+	else:
+		_mock_sign_message(message)
+
+## Get SOL balance for connected wallet
+func get_balance() -> float:
+	if not use_mock_mode and native_plugin:
+		return native_plugin.get_balance(wallet_address)
+	else:
+		return _mock_get_balance()
+
+# ============================================
+# Native Plugin Signal Handlers
+# ============================================
+
+func _on_native_wallet_connected(address: String, pub_key: String) -> void:
+	wallet_address = address
+	public_key = pub_key
+	is_connected = true
+	save_wallet_data()
+	wallet_connected.emit(address)
+	print("✅ Wallet connected: ", address)
+
+func _on_native_connection_failed(error: String) -> void:
+	is_connected = false
+	transaction_failed.emit(error)
+	push_error("❌ Wallet connection failed: " + error)
+
+func _on_native_transaction_signed(signature: String) -> void:
+	transaction_completed.emit(signature)
+	print("✅ Transaction signed: ", signature)
+
+func _on_native_transaction_failed(error: String) -> void:
+	transaction_failed.emit(error)
+	push_error("❌ Transaction failed: " + error)
+
+func _on_native_wallet_disconnected() -> void:
+	is_connected = false
+	wallet_address = ""
+	public_key = ""
+	save_wallet_data()
+	wallet_disconnected.emit()
+	print("ℹ️ Wallet disconnected")
+
+# ============================================
+# Mock Implementation (for development)
+# ============================================
+
 func _mock_connect_wallet() -> void:
 	await get_tree().create_timer(1.0).timeout
-	wallet_address = "8x7f...2kQ9"
+	wallet_address = "8x7fMockSolanaAddress2kQ9"
 	public_key = "8x7fMockPublicKey2kQ9"
 	is_connected = true
 	save_wallet_data()
 	wallet_connected.emit(wallet_address)
-	print("Mock wallet connected: ", wallet_address)
+	print("🔧 Mock wallet connected: ", wallet_address)
 
-## Disconnect wallet
-func disconnect_wallet() -> void:
+func _mock_disconnect_wallet() -> void:
 	wallet_address = ""
 	public_key = ""
 	is_connected = false
 	save_wallet_data()
 	wallet_disconnected.emit()
+	print("🔧 Mock wallet disconnected")
 
-## Sign transaction
-func sign_transaction(transaction_data: Dictionary) -> String:
+func _mock_sign_transaction(transaction: Dictionary) -> void:
 	if not is_connected:
-		push_error("Wallet not connected")
-		return ""
+		transaction_failed.emit("Wallet not connected")
+		return
 
-	if native_plugin:
-		var result = await native_plugin.sign_transaction(transaction_data)
-		if result.success:
-			transaction_completed.emit(result.signature)
-			return result.signature
-		else:
-			transaction_failed.emit(result.error)
-			return ""
-	else:
-		# Mock signature
-		await get_tree().create_timer(1.0).timeout
-		var mock_signature = "mock_sig_%d" % Time.get_unix_time_from_system()
-		transaction_completed.emit(mock_signature)
-		return mock_signature
+	await get_tree().create_timer(1.0).timeout
+	var mock_signature = "mock_tx_%d" % Time.get_unix_time_from_system()
+	transaction_completed.emit(mock_signature)
+	print("🔧 Mock transaction signed: ", mock_signature)
 
-## Sign message for authentication
-func sign_message(message: String) -> String:
+func _mock_sign_message(message: String) -> void:
 	if not is_connected:
-		push_error("Wallet not connected")
-		return ""
+		transaction_failed.emit("Wallet not connected")
+		return
 
-	if native_plugin:
-		var result = await native_plugin.sign_message(message)
-		return result.signature if result.success else ""
-	else:
-		# Mock signature
-		await get_tree().create_timer(0.5).timeout
-		return "mock_msg_sig_%d" % Time.get_unix_time_from_system()
+	await get_tree().create_timer(0.5).timeout
+	var mock_signature = "mock_msg_%d" % Time.get_unix_time_from_system()
+	transaction_completed.emit(mock_signature)
+	print("🔧 Mock message signed: ", mock_signature)
 
-## Get wallet balance
-func get_balance() -> float:
+func _mock_get_balance() -> float:
 	if not is_connected:
 		return 0.0
+	# Mock balance of 2.47 SOL
+	return 2.47
 
-	if native_plugin:
-		var result = await native_plugin.get_balance(wallet_address)
-		return result.balance if result.success else 0.0
-	else:
-		# Mock balance
-		return 2.47
+# ============================================
+# Save/Load
+# ============================================
 
 ## Save wallet connection state
 func save_wallet_data() -> void:
@@ -137,5 +189,5 @@ func load_wallet_data() -> void:
 		public_key = save_data.get("public_key", "")
 		file.close()
 
-		if is_connected:
+		if is_connected and wallet_address != "":
 			wallet_connected.emit(wallet_address)
