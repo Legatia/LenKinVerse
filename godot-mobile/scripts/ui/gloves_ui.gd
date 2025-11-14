@@ -369,10 +369,19 @@ func _on_react_button_pressed() -> void:
 		for product in products:
 			message += "+%d %s\n" % [products[product], product]
 
-		if result.get("is_new_discovery"):
-			message += "\n🎉 NEW DISCOVERY!"
-
 		show_message(message)
+
+		# Show discovery modal for each newly discovered element
+		var new_elements = result.get("new_elements", [])
+		if new_elements.size() > 0:
+			# Show discovery modal for first new element
+			await get_tree().create_timer(0.5).timeout
+			_show_discovery_modal(new_elements[0], reaction.get("type", "reaction"))
+
+			# Show additional discoveries if there are more
+			for i in range(1, new_elements.size()):
+				await get_tree().create_timer(1.0).timeout
+				_show_discovery_modal(new_elements[i], reaction.get("type", "reaction"))
 
 		# Clear selection
 		selected_reactants.clear()
@@ -388,3 +397,16 @@ func _on_react_button_pressed() -> void:
 		# Failed
 		var error = result.get("error", "Unknown error")
 		show_message("❌ REACTION FAILED\n\n" + error)
+
+func _show_discovery_modal(element_id: String, discovery_method: String) -> void:
+	# Get element rarity
+	var rarity = ReactionManager.get_element_rarity(element_id)
+
+	# Load discovery modal scene
+	var modal_scene = load("res://scenes/ui/discovery_modal.tscn")
+	if modal_scene:
+		var modal = modal_scene.instantiate()
+		get_tree().root.add_child(modal)
+		modal.show_discovery(element_id, discovery_method, rarity)
+	else:
+		push_error("Failed to load discovery modal scene")

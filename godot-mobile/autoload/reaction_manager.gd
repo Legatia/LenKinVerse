@@ -122,18 +122,33 @@ func perform_reaction(reactants: Dictionary, mode: String, catalyst: Dictionary 
 	# Consume charge
 	consume_gloves_charge(charge_required)
 
-	# Add products
-	InventoryManager.add_elements(reaction["products"])
-
-	# Check if this is a new discovery
+	# Check if this is a new discovery BEFORE adding to inventory
 	var is_new = check_if_new_discovery(reaction["products"])
+	var new_elements: Array = []
+
+	# Register discoveries and track creation
+	for element in reaction["products"]:
+		var amount = reaction["products"][element]
+
+		if DiscoveryManager.would_be_new_discovery(element):
+			# This is a first-time discovery!
+			new_elements.append(element)
+			var rarity = get_element_rarity(element)
+			DiscoveryManager.discover_element(element, reaction.get("type", "reaction"), rarity)
+		else:
+			# Already discovered - just track creation
+			DiscoveryManager.track_collection(element, amount, "reaction")
+
+	# Add products to inventory
+	InventoryManager.add_elements(reaction["products"])
 
 	return {
 		"success": true,
 		"reaction": reaction,
 		"products": reaction["products"],
 		"charge_used": charge_required,
-		"is_new_discovery": is_new
+		"is_new_discovery": is_new,
+		"new_elements": new_elements  # List of newly discovered elements
 	}
 
 func find_reaction(reactants: Dictionary, mode: String, catalyst: Dictionary) -> Dictionary:
@@ -193,10 +208,23 @@ func handle_failed_nuclear(reactants: Dictionary, catalyst: Dictionary, reaction
 
 	# Check for rare discovery during failure
 	var discovered_new = false
+	var new_elements: Array = []
+
 	if randf() < discovery_chance:
 		# Discovered new undefined material!
+		var is_new_discovery = DiscoveryManager.would_be_new_discovery(discovery_product)
+
+		if is_new_discovery:
+			# This is a first-time discovery!
+			var rarity = get_element_rarity(discovery_product)
+			DiscoveryManager.discover_element(discovery_product, "nuclear_failure", rarity)
+			new_elements.append(discovery_product)
+			discovered_new = true
+		else:
+			# Already discovered - just track creation
+			DiscoveryManager.track_collection(discovery_product, 1, "reaction")
+
 		InventoryManager.add_elements({discovery_product: 1})
-		discovered_new = true
 
 	var error_msg = "❌ Nuclear reaction failed!"
 	if discovered_new:
@@ -208,27 +236,22 @@ func handle_failed_nuclear(reactants: Dictionary, catalyst: Dictionary, reaction
 		"returned": failure_products,
 		"charge_used": charge_used,
 		"discovered_new": discovered_new,
-		"new_material": discovery_product if discovered_new else ""
+		"new_material": discovery_product if discovered_new else "",
+		"new_elements": new_elements
 	}
 
 func check_if_new_discovery(products: Dictionary) -> bool:
 	# Check if any product is being created for the first time
 	for element in products:
-		# Skip basic elements
-		if element in ["lkC", "lkO", "lkN", "lkH", "lkSi"]:
-			continue
-
-		# Check if we've ever had this before
-		var total_collected = get_element_lifetime_count(element)
-		if total_collected == 0:
+		# Use DiscoveryManager to check if this would be a new discovery
+		if DiscoveryManager.would_be_new_discovery(element):
 			return true
 
 	return false
 
 func get_element_lifetime_count(element: String) -> int:
-	# TODO: Track lifetime collection stats
-	# For now, check current inventory
-	return InventoryManager.get_element_amount(element)
+	# Use DiscoveryManager's lifetime tracking
+	return DiscoveryManager.get_lifetime_created(element)
 
 func get_charge_multiplier(mode: String) -> int:
 	match mode:
@@ -264,3 +287,21 @@ func consume_gloves_charge(amount: int) -> void:
 	if write_file:
 		write_file.store_var(data)
 		write_file.close()
+
+## Get element rarity for discovery tracking
+func get_element_rarity(element_id: String) -> int:
+	# Basic elements: Common (0)
+	if element_id in ["lkC", "lkO", "lkH", "lkN", "lkSi"]:
+		return 0
+	# Simple compounds: Uncommon (1)
+	elif element_id in ["CO2", "H2O"]:
+		return 1
+	# Processed materials: Rare (2)
+	elif element_id in ["Coal", "lkC14"]:
+		return 2
+	# Unknown/special: Legendary (3)
+	elif element_id in ["Carbon_X"]:
+		return 3
+	# Default
+	else:
+		return 0

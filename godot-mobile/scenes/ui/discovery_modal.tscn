@@ -1,0 +1,137 @@
+[gd_scene load_steps=3 format=3 uid="uid://discovery_modal_scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/discovery_modal.gd" id="1"]
+
+[sub_resource type="Animation" id="discovery_entrance"]
+resource_name = "discovery_entrance"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Panel:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Panel:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(2, 1),
+"update": 0,
+"values": [Vector2(0.5, 0.5), Vector2(1, 1)]
+}
+
+[node name="DiscoveryModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -200.0
+offset_right = 150.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "🎉 NEW DISCOVERY! 🎉"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ElementIcon" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "✨"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 64
+
+[node name="ElementNameLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Element Name"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 2
+
+[node name="RarityLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "⭐ Rare"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Element description goes here with multiple lines of text explaining what this element is."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="StatsLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Discovered via: Reaction
+Date: 2024-11-14"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 2
+
+[node name="ShareButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "📱 Share Discovery"
+
+[node name="CloseButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Close"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_12345")
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_12345"]
+_data = {
+"discovery_entrance": SubResource("discovery_entrance")
+}
