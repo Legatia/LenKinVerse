@@ -1,0 +1,236 @@
+[gd_scene load_steps=6 format=3 uid="uid://cwmxqxr6xvpfj"]
+
+[ext_resource type="Script" path="res://scripts/solana_planet.gd" id="1_solana"]
+[ext_resource type="Script" path="res://scripts/player.gd" id="2_player"]
+[ext_resource type="Script" path="res://scripts/interactable_zone.gd" id="3_interactable"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="4_hud"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(32, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_furniture"]
+size = Vector2(80, 80)
+
+[node name="SolanaPlanet" type="Node2D"]
+script = ExtResource("1_solana")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 360.0
+offset_bottom = 640.0
+mouse_filter = 2
+color = Color(0.172549, 0.129412, 0.215686, 1)
+
+[node name="FloorTiles" type="ColorRect" parent="Background"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 80.0
+offset_right = 340.0
+offset_bottom = 600.0
+mouse_filter = 2
+color = Color(0.309804, 0.211765, 0.152941, 1)
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(180, 320)
+script = ExtResource("2_player")
+
+[node name="ColorRect" type="ColorRect" parent="Player"]
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+mouse_filter = 2
+color = Color(0.4, 0.8, 0.4, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="InteractionArea" type="Area2D" parent="Player"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/InteractionArea"]
+shape = SubResource("RectangleShape2D_player")
+scale = Vector2(2.5, 2.5)
+
+[node name="StorageBox" type="StaticBody2D" parent="." groups=["furniture"]]
+position = Vector2(80, 120)
+input_pickable = true
+script = ExtResource("3_interactable")
+zone_name = "Storage Box"
+scene_to_open = "res://scenes/ui/storage_ui.tscn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StorageBox"]
+shape = SubResource("RectangleShape2D_furniture")
+
+[node name="ColorRect" type="ColorRect" parent="StorageBox"]
+offset_left = -40.0
+offset_top = -40.0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+color = Color(0.545098, 0.341176, 0.172549, 1)
+
+[node name="Label" type="Label" parent="StorageBox/ColorRect"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "📦"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractionArea" type="Area2D" parent="StorageBox"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StorageBox/InteractionArea"]
+shape = SubResource("RectangleShape2D_player")
+scale = Vector2(2.5, 2.5)
+
+[node name="GlovesStation" type="StaticBody2D" parent="." groups=["furniture"]]
+position = Vector2(180, 380)
+input_pickable = true
+script = ExtResource("3_interactable")
+zone_name = "Alchemy Gloves"
+scene_to_open = "res://scenes/ui/gloves_ui.tscn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GlovesStation"]
+shape = SubResource("RectangleShape2D_furniture")
+
+[node name="ColorRect" type="ColorRect" parent="GlovesStation"]
+offset_left = -40.0
+offset_top = -40.0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+color = Color(0.960784, 0.619608, 0.0431373, 1)
+
+[node name="Label" type="Label" parent="GlovesStation/ColorRect"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "⚗️"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractionArea" type="Area2D" parent="GlovesStation"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GlovesStation/InteractionArea"]
+shape = SubResource("RectangleShape2D_player")
+scale = Vector2(2.5, 2.5)
+
+[node name="Marketplace" type="StaticBody2D" parent="." groups=["furniture"]]
+position = Vector2(280, 520)
+input_pickable = true
+script = ExtResource("3_interactable")
+zone_name = "Marketplace"
+scene_to_open = "res://scenes/ui/marketplace_ui.tscn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Marketplace"]
+shape = SubResource("RectangleShape2D_furniture")
+
+[node name="ColorRect" type="ColorRect" parent="Marketplace"]
+offset_left = -40.0
+offset_top = -40.0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+color = Color(0.305882, 0.698039, 0.85098, 1)
+
+[node name="Label" type="Label" parent="Marketplace/ColorRect"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "🖥️"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractionArea" type="Area2D" parent="Marketplace"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Marketplace/InteractionArea"]
+shape = SubResource("RectangleShape2D_player")
+scale = Vector2(2.5, 2.5)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("4_hud")
+
+[node name="TopBar" type="Panel" parent="HUD"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 50.0
+grow_horizontal = 2
+
+[node name="ChargeLabel" type="Label" parent="HUD/TopBar"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 80.0
+offset_bottom = 36.0
+text = "⚡ 43"
+horizontal_alignment = 1
+
+[node name="LKCLabel" type="Label" parent="HUD/TopBar"]
+layout_mode = 0
+offset_left = 90.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 36.0
+text = "💰 1,247 lkC"
+
+[node name="RawLabel" type="Label" parent="HUD/TopBar"]
+layout_mode = 0
+offset_left = 210.0
+offset_top = 10.0
+offset_right = 320.0
+offset_bottom = 36.0
+text = "⚫ 798 raw"
+
+[node name="ProfileButton" type="Button" parent="HUD/TopBar"]
+layout_mode = 0
+offset_left = 320.0
+offset_top = 10.0
+offset_right = 350.0
+offset_bottom = 40.0
+text = "📊"
+
+[node name="InteractionPrompt" type="Label" parent="HUD"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -15.0
+offset_right = 80.0
+offset_bottom = 15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.960784, 0.619608, 0.0431373, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "[E] Interact"
+horizontal_alignment = 1
+vertical_alignment = 1

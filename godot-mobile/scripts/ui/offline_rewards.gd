@@ -68,8 +68,9 @@ Final: [color=#F59E0B]+%d raw lkC[/color][/center]" % [
 Final: 0 raw lkC[/center]"
 
 func _on_analyze_button_pressed() -> void:
-	# Go to main scene and open gloves UI
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	# Go to correct planet scene and open gloves UI
+	var planet_scene = get_planet_scene_for_world()
+	get_tree().change_scene_to_file(planet_scene)
 
 	# Open gloves UI after scene loads
 	await get_tree().create_timer(0.5).timeout
@@ -77,5 +78,19 @@ func _on_analyze_button_pressed() -> void:
 	get_tree().root.add_child(gloves_ui)
 
 func _on_continue_button_pressed() -> void:
-	# Go to main scene
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	# Go to correct planet scene
+	var planet_scene = get_planet_scene_for_world()
+	get_tree().change_scene_to_file(planet_scene)
+
+func get_planet_scene_for_world() -> String:
+	match WorldManager.current_world:
+		"solana":
+			return "res://scenes/solana_planet.tscn"
+		"ethereum_base":
+			return "res://scenes/base_planet.tscn"
+		"sui":
+			return "res://scenes/sui_planet.tscn"
+		_:
+			# Default to Solana if no world selected (shouldn't happen)
+			push_warning("No world selected, defaulting to Solana")
+			return "res://scenes/solana_planet.tscn"

@@ -13,8 +13,11 @@ godot-mobile/
 │   ├── wallet_manager.gd   # Solana wallet integration
 │   └── health_manager.gd   # Movement tracking (HealthKit/Google Fit)
 ├── scenes/
-│   ├── main.tscn           # Main room scene
+│   ├── solana_planet.tscn  # Solana planet room scene
+│   ├── base_planet.tscn    # Base (Ethereum L2) planet (coming soon)
+│   ├── sui_planet.tscn     # Sui planet (coming soon)
 │   └── ui/                 # UI screens
+│       ├── world_selection.tscn
 │       ├── login_screen.tscn
 │       ├── offline_rewards.tscn
 │       ├── storage_ui.tscn
@@ -257,13 +260,13 @@ Place in `assets/sprites/furniture/`:
 - `gloves_station.png` (80×80)
 - `marketplace.png` (80×80)
 
-Replace placeholder sprites in `main.tscn`.
+Replace placeholder sprites in planet scene files (`solana_planet.tscn`, etc.).
 
 ### Room Background
 Place in `assets/sprites/`:
 - `room_background.png` (360×640)
 
-Update Background node in `main.tscn`.
+Update Background node in planet scene files (`solana_planet.tscn`, etc.).
 
 ## 💾 Save System
 
