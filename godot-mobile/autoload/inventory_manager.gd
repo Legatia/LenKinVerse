@@ -95,12 +95,14 @@ func consume_elements(elements_dict: Dictionary) -> bool:
 
 ## Add discovered isotope
 func add_isotope(isotope_type: String) -> void:
+	var current_time = Time.get_unix_time_from_system()
 	var isotope = {
-		"id": "isotope_%d" % Time.get_unix_time_from_system(),
+		"id": "isotope_%d" % current_time,
 		"type": isotope_type,
-		"amount": 1,
-		"discovered_at": Time.get_unix_time_from_system(),
-		"decay_time": Time.get_unix_time_from_system() + (24 * 60 * 60)  # 24 hours
+		"volume": 1.0,  # Starts at 100% volume
+		"discovered_at": current_time,
+		"last_decay_check": current_time,
+		"decay_time": current_time + (24 * 60 * 60)  # Still track final expiry
 	}
 
 	isotopes.append(isotope)
@@ -119,19 +121,38 @@ func remove_isotope(isotope_id: String) -> bool:
 		return true
 	return false
 
-## Check for decayed isotopes
+## Check for isotope volume decay (halves every 6 hours)
 func _check_isotope_decay() -> void:
+	const DECAY_INTERVAL: int = 6 * 60 * 60  # 6 hours in seconds
+	const MIN_VOLUME: float = 0.06  # Remove when below 6% volume
+
 	var current_time = Time.get_unix_time_from_system()
-	var removed = false
+	var changed = false
 
-	isotopes = isotopes.filter(func(i):
-		if i.get("decay_time", 0) <= current_time:
-			removed = true
-			return false
-		return true
-	)
+	for isotope in isotopes:
+		var last_check = isotope.get("last_decay_check", isotope.get("discovered_at", 0))
+		var time_since_check = current_time - last_check
 
-	if removed:
+		# Calculate how many 6-hour periods have passed
+		var decay_periods = int(time_since_check / DECAY_INTERVAL)
+
+		if decay_periods > 0:
+			# Halve volume for each period: volume * (0.5 ^ periods)
+			var current_volume = isotope.get("volume", 1.0)
+			var new_volume = current_volume * pow(0.5, decay_periods)
+
+			isotope["volume"] = new_volume
+			isotope["last_decay_check"] = last_check + (decay_periods * DECAY_INTERVAL)
+			changed = true
+
+	# Remove isotopes below minimum volume
+	var original_size = isotopes.size()
+	isotopes = isotopes.filter(func(i): return i.get("volume", 1.0) >= MIN_VOLUME)
+
+	if isotopes.size() < original_size:
+		changed = true
+
+	if changed:
 		inventory_changed.emit()
 		save_inventory()
 

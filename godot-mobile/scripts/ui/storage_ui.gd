@@ -77,14 +77,35 @@ func add_element_item(element: String, amount: int) -> void:
 func add_isotope_item(isotope: Dictionary) -> void:
 	var item = HBoxContainer.new()
 
-	var time_left = isotope.get("decay_time", 0) - Time.get_unix_time_from_system()
-	var hours_left = max(0, int(time_left / 3600.0))
+	# Calculate time left until next decay
+	var current_time = Time.get_unix_time_from_system()
+	var last_check = isotope.get("last_decay_check", isotope.get("discovered_at", 0))
+	var time_since_decay = current_time - last_check
+	var time_to_next_decay = (6 * 60 * 60) - time_since_decay
+	var hours_to_decay = max(0, int(time_to_next_decay / 3600.0))
 
-	var label = Label.new()
-	label.text = "💎 %s × %d ⏱️%dh" % [
+	# Get current volume
+	var volume = isotope.get("volume", 1.0)
+	var volume_percent = int(volume * 100)
+
+	# Color code based on volume
+	var volume_color = ""
+	if volume >= 0.75:
+		volume_color = "[color=#4CAF50]"  # Green
+	elif volume >= 0.25:
+		volume_color = "[color=#FF9800]"  # Orange
+	else:
+		volume_color = "[color=#F44336]"  # Red
+
+	var label = RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.custom_minimum_size = Vector2(200, 35)
+	label.text = "💎 %s %s%d%%%% vol[/color] ⏱️ -%dh" % [
 		isotope.get("type", "?"),
-		isotope.get("amount", 1),
-		hours_left
+		volume_color,
+		volume_percent,
+		hours_to_decay
 	]
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	item.add_child(label)

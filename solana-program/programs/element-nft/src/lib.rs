@@ -27,6 +27,7 @@ pub mod element_nft {
         amount: u64,
         generation_method: String,
         decay_time: Option<i64>,
+        volume: Option<f32>,  // For isotopes: volume percentage (0.0-1.0)
     ) -> Result<()> {
         let element = &mut ctx.accounts.element_account;
 
@@ -36,6 +37,11 @@ pub mod element_nft {
         require!(symbol.len() <= 6, ElementError::SymbolTooLong);
         require!(rarity <= 3, ElementError::InvalidRarity);
         require!(amount > 0, ElementError::InvalidAmount);
+
+        // Validate volume if present
+        if let Some(v) = volume {
+            require!(v >= 0.0 && v <= 1.0, ElementError::InvalidVolume);
+        }
 
         // Set element data
         element.owner = ctx.accounts.owner.key();
@@ -48,9 +54,11 @@ pub mod element_nft {
         element.discovered_at = Clock::get()?.unix_timestamp;
         element.generation_method = generation_method;
         element.decay_time = decay_time;
+        element.volume = volume;
         element.bump = *ctx.bumps.get("element_account").unwrap();
 
-        msg!("Minted element NFT: {} ({}) - Rarity: {}", element_name, symbol, rarity);
+        msg!("Minted element NFT: {} ({}) - Rarity: {} - Volume: {:?}",
+            element_name, symbol, rarity, volume);
 
         Ok(())
     }
@@ -65,6 +73,20 @@ pub mod element_nft {
 
         element.amount = new_amount;
         msg!("Updated element amount to: {}", new_amount);
+
+        Ok(())
+    }
+
+    /// Update isotope volume (for decaying isotopes)
+    pub fn update_volume(
+        ctx: Context<UpdateElement>,
+        new_volume: f32,
+    ) -> Result<()> {
+        let element = &mut ctx.accounts.element_account;
+        require!(new_volume >= 0.0 && new_volume <= 1.0, ElementError::InvalidVolume);
+
+        element.volume = Some(new_volume);
+        msg!("Updated isotope volume to: {}", new_volume);
 
         Ok(())
     }
@@ -167,7 +189,8 @@ pub struct ElementAccount {
     pub discovered_at: i64,       // Unix timestamp
     #[max_len(20)]
     pub generation_method: String, // "collected", "analyzed", "reacted"
-    pub decay_time: Option<i64>,  // For isotopes
+    pub decay_time: Option<i64>,  // For isotopes: when it expires completely
+    pub volume: Option<f32>,      // For isotopes: current volume (0.0-1.0, halves every 6h)
     pub bump: u8,
 }
 
@@ -183,4 +206,6 @@ pub enum ElementError {
     InvalidRarity,
     #[msg("Amount must be greater than 0")]
     InvalidAmount,
+    #[msg("Volume must be between 0.0 and 1.0")]
+    InvalidVolume,
 }
