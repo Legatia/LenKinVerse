@@ -19,7 +19,7 @@ var worlds: Dictionary = {
 		"display_name": "Solana",
 		"icon": "☀️",
 		"color": Color(0.573, 0.122, 0.729),  # Purple
-		"description": "Fast, low-cost transactions\nNative Solana Mobile support",
+		"description": "Rapid reaction\n Primary Essence: Carbon",
 		"enabled": true
 	},
 	"ethereum_base": {
@@ -27,15 +27,15 @@ var worlds: Dictionary = {
 		"display_name": "Base (Ethereum L2)",
 		"icon": "🔵",
 		"color": Color(0.0, 0.318, 0.784),  # Blue
-		"description": "Ethereum L2 by Coinbase\nLow fees, EVM compatible",
+		"description": "Satellite Planet of Ethereum\n Share Market with other L2 Planets",
 		"enabled": true
 	},
 	"sui": {
 		"name": "Sui",
-		"display_name": "Sui Network",
+		"display_name": "Sui",
 		"icon": "🌊",
 		"color": Color(0.314, 0.784, 0.878),  # Cyan
-		"description": "High throughput blockchain\nMove programming language",
+		"description": "Primary Essence: Water\n Rumour: sign of life",
 		"enabled": true
 	}
 }

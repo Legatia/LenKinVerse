@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://cwmxqxr6xvpfj"]
+[gd_scene load_steps=6 format=3 uid="uid://vksls2rsp08e"]
 
 [ext_resource type="Script" path="res://scripts/solana_planet.gd" id="1_solana"]
 [ext_resource type="Script" path="res://scripts/player.gd" id="2_player"]
