@@ -9,16 +9,29 @@ signal wallet_connected(address: String)
 signal wallet_disconnected()
 signal transaction_completed(signature: String)
 signal transaction_failed(error: String)
+signal balance_updated(sol_balance: float, alsol_balance: float)
 
 var is_connected: bool = false
 var wallet_address: String = ""
 var public_key: String = ""
 
+# Cached balances
+var sol_balance: float = 0.0
+var alsol_balance: float = 0.0
+
 # Reference to native SolanaWallet singleton (if available)
 var native_plugin = null
 var use_mock_mode: bool = false
 
+# Integration helpers
+var solana_rpc: Node = null
+var anchor_helper: Node = null
+var metadata_uploader: Node = null
+
 func _ready() -> void:
+	# Initialize integration helpers
+	_init_helpers()
+
 	# Try to load native SolanaWallet plugin
 	if Engine.has_singleton("SolanaWallet"):
 		native_plugin = Engine.get_singleton("SolanaWallet")
@@ -37,6 +50,33 @@ func _ready() -> void:
 		push_warning("   See docs/SOLANA_PLUGIN_SPEC.md for plugin implementation details")
 
 	load_wallet_data()
+
+## Initialize integration helpers
+func _init_helpers() -> void:
+	# Load integration scripts
+	var SolanaRPC = load("res://addons/solana_integration/solana_rpc.gd")
+	var AnchorHelper = load("res://addons/solana_integration/anchor_helper.gd")
+	var MetadataUploader = load("res://addons/solana_integration/metadata_uploader.gd")
+
+	solana_rpc = SolanaRPC.new()
+	anchor_helper = AnchorHelper.new()
+	metadata_uploader = MetadataUploader.new()
+
+	add_child(solana_rpc)
+	add_child(anchor_helper)
+	add_child(metadata_uploader)
+
+	# Connect signals
+	solana_rpc.rpc_response.connect(_on_rpc_response)
+	solana_rpc.rpc_error.connect(_on_rpc_error)
+	metadata_uploader.upload_completed.connect(_on_metadata_uploaded)
+	metadata_uploader.upload_failed.connect(_on_metadata_upload_failed)
+
+	# Set cluster based on current world
+	var cluster = WorldManager.get_current_world().get("cluster", "devnet")
+	solana_rpc.set_cluster(cluster)
+
+	print("✅ Solana integration helpers initialized")
 
 ## Connect to Phantom/Solflare/other Solana mobile wallet
 func connect_wallet() -> void:
@@ -158,6 +198,183 @@ func _mock_get_balance() -> float:
 		return 0.0
 	# Mock balance of 2.47 SOL
 	return 2.47
+
+# ============================================
+# High-Level Blockchain Operations
+# ============================================
+
+## Update balances from blockchain
+func update_balances() -> void:
+	if not is_connected:
+		return
+
+	# Get SOL balance
+	solana_rpc.get_balance(wallet_address)
+	# Note: Response will come via _on_rpc_response signal
+
+## Mint element NFT
+func mint_element_nft(element_data: Dictionary) -> void:
+	"""
+	Complete NFT minting flow:
+	1. Upload metadata to IPFS
+	2. Build mint transaction
+	3. Sign with wallet
+	4. Send to blockchain
+	"""
+	if not is_connected:
+		transaction_failed.emit("Wallet not connected")
+		return
+
+	print("🎨 Starting NFT mint for: %s" % element_data.get("element_name", "Unknown"))
+
+	# Step 1: Upload metadata
+	metadata_uploader.quick_upload(element_data)
+	# Will continue in _on_metadata_uploaded
+
+var pending_mint_element_data: Dictionary = {}
+
+func _on_metadata_uploaded(metadata_uri: String) -> void:
+	print("✅ Metadata uploaded: %s" % metadata_uri)
+
+	# Step 2: Build mint transaction
+	var mint_keypair = _generate_mint_keypair()
+	var element_pda = anchor_helper.derive_element_account_pda(mint_keypair)
+
+	var mint_instruction = anchor_helper.build_mint_element(
+		wallet_address,
+		mint_keypair,
+		element_pda,
+		metadata_uri,  # Used as metadata_account for now
+		pending_mint_element_data
+	)
+
+	# Step 3: Get recent blockhash
+	solana_rpc.get_recent_blockhash()
+	# Will continue in _on_rpc_response with transaction building
+
+func _on_metadata_upload_failed(error: String) -> void:
+	transaction_failed.emit("Metadata upload failed: %s" % error)
+
+## Swap SOL for alSOL
+func swap_sol_for_alsol(sol_amount: float) -> void:
+	if not is_connected:
+		transaction_failed.emit("Wallet not connected")
+		return
+
+	var lamports = int(sol_amount * 1_000_000_000)
+
+	var instruction = anchor_helper.build_swap_sol_for_alsol(
+		wallet_address,
+		lamports,
+		"alSOL_mint_address",  # TODO: Replace with actual
+		"marketplace_authority"  # TODO: Replace with actual
+	)
+
+	solana_rpc.get_recent_blockhash()
+	# Will build and send transaction in _on_rpc_response
+
+## Swap LKC for alSOL
+func swap_lkc_for_alsol(lkc_amount: int) -> void:
+	if not is_connected:
+		transaction_failed.emit("Wallet not connected")
+		return
+
+	var swap_history_pda = anchor_helper.derive_swap_history_pda(wallet_address)
+
+	var instruction = anchor_helper.build_swap_lkc_for_alsol(
+		wallet_address,
+		lkc_amount,
+		"LKC_mint_address",  # TODO: Replace with actual
+		"alSOL_mint_address",  # TODO: Replace with actual
+		swap_history_pda,
+		"marketplace_authority"  # TODO: Replace with actual
+	)
+
+	solana_rpc.get_recent_blockhash()
+	# Will build and send transaction in _on_rpc_response
+
+## Create marketplace listing
+func create_marketplace_listing(element_nft_mint: String, price_sol: float) -> void:
+	if not is_connected:
+		transaction_failed.emit("Wallet not connected")
+		return
+
+	var price_lamports = int(price_sol * 1_000_000_000)
+	var listing_pda = anchor_helper.derive_listing_pda(element_nft_mint)
+
+	var instruction = anchor_helper.build_create_listing(
+		wallet_address,
+		element_nft_mint,
+		price_lamports,
+		listing_pda
+	)
+
+	solana_rpc.get_recent_blockhash()
+	# Will build and send transaction in _on_rpc_response
+
+## Buy from marketplace
+func buy_marketplace_listing(listing_data: Dictionary) -> void:
+	if not is_connected:
+		transaction_failed.emit("Wallet not connected")
+		return
+
+	var instruction = anchor_helper.build_buy_listing(
+		wallet_address,
+		listing_data["seller"],
+		listing_data["mint"],
+		listing_data["listing_pda"],
+		"alSOL_mint_address",  # TODO: Replace with actual
+		"marketplace_authority"  # TODO: Replace with actual
+	)
+
+	solana_rpc.get_recent_blockhash()
+	# Will build and send transaction in _on_rpc_response
+
+## Query marketplace listings
+func fetch_marketplace_listings() -> void:
+	solana_rpc.get_program_accounts(anchor_helper.MARKETPLACE_PROGRAM_ID)
+	# Results will come via _on_rpc_response
+
+# ============================================
+# RPC Signal Handlers
+# ============================================
+
+var pending_rpc_request: String = ""
+
+func _on_rpc_response(result: Variant) -> void:
+	print("📡 RPC response received: ", result)
+
+	# Handle different response types
+	if result is Dictionary:
+		# Balance response
+		if result.has("value") and result["value"] is int:
+			sol_balance = result["value"] / 1_000_000_000.0
+			balance_updated.emit(sol_balance, alsol_balance)
+			print("💰 SOL Balance: %.4f" % sol_balance)
+
+		# Blockhash response
+		elif result.has("value") and result["value"].has("blockhash"):
+			var blockhash = result["value"]["blockhash"]
+			print("🔗 Recent blockhash: %s" % blockhash)
+			# TODO: Build and sign transaction here
+
+	elif result is Array:
+		# Program accounts (marketplace listings)
+		print("📋 Found %d program accounts" % result.size())
+		# TODO: Parse and emit marketplace listings
+
+func _on_rpc_error(error: String) -> void:
+	push_error("RPC error: %s" % error)
+	transaction_failed.emit("RPC error: %s" % error)
+
+# ============================================
+# Helpers
+# ============================================
+
+## Generate new mint keypair (placeholder)
+func _generate_mint_keypair() -> String:
+	# In real implementation, generate actual Solana keypair
+	return "MintKeypair_%d" % Time.get_unix_time_from_system()
 
 # ============================================
 # Save/Load

@@ -149,23 +149,72 @@ func _mint_token(element: String, amount: int) -> void:
 		show_message("Insufficient SOL for minting (need 0.05 SOL)")
 		return
 
-	show_message("Minting %s as token..." % element)
+	show_message("🎨 Minting %s as NFT..." % element)
 
-	# Sign transaction
-	var tx_data = {
-		"type": "mint_token",
-		"element": element,
-		"amount": amount
+	# Build element data for NFT
+	var element_data = {
+		"element_id": element,
+		"element_name": _get_element_full_name(element),
+		"symbol": element,
+		"rarity": _get_element_rarity(element),
+		"amount": amount,
+		"generation_method": _get_generation_method(element),
+		"discovered_at": Time.get_unix_time_from_system()
 	}
 
-	var signature = await WalletManager.sign_transaction(tx_data)
-
-	if signature != "":
-		show_message("Token minted successfully!\nSignature: %s" % signature)
+	# Connect to transaction signals
+	var on_success = func(signature: String):
+		show_message("✅ NFT minted successfully!\nSignature: %s" % signature)
+		# Consume elements from inventory
+		InventoryManager.consume_elements({element: amount})
 		# Refresh UI
 		populate_mintable_items()
+		WalletManager.transaction_completed.disconnect(on_success)
+
+	var on_failure = func(error: String):
+		show_message("❌ Minting failed: %s" % error)
+		WalletManager.transaction_failed.disconnect(on_failure)
+
+	WalletManager.transaction_completed.connect(on_success)
+	WalletManager.transaction_failed.connect(on_failure)
+
+	# Start minting process
+	WalletManager.mint_element_nft(element_data)
+
+## Get full element name
+func _get_element_full_name(symbol: String) -> String:
+	match symbol:
+		"lkC": return "Lennard-Kinsium Carbon"
+		"lkO": return "Lennard-Kinsium Oxygen"
+		"lkH": return "Lennard-Kinsium Hydrogen"
+		"CO2": return "Carbon Dioxide"
+		"H2O": return "Water"
+		"Coal": return "Coal"
+		_: return symbol
+
+## Get element rarity
+func _get_element_rarity(symbol: String) -> int:
+	# Basic elements: Common (0)
+	if symbol in ["lkC", "lkO", "lkH"]:
+		return 0
+	# Simple compounds: Uncommon (1)
+	elif symbol in ["CO2", "H2O"]:
+		return 1
+	# Processed materials: Rare (2)
+	elif symbol in ["Coal"]:
+		return 2
+	# Unknown/special: Rare (2)
 	else:
-		show_message("Minting failed. Please try again.")
+		return 2
+
+## Get generation method
+func _get_generation_method(symbol: String) -> String:
+	# Check if it was created via reaction
+	if symbol in ["CO2", "H2O", "Coal"]:
+		return "chemical_reaction"
+	# Basic elements from walking
+	else:
+		return "walk_mining"
 
 func show_message(text: String) -> void:
 	print(text)
