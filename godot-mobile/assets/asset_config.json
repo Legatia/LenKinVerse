@@ -1,0 +1,154 @@
+{
+	"$schema": "./asset_config_schema.json",
+	"version": "1.0.0",
+	"description": "Asset configuration for LenKinVerse - maps asset IDs to file paths",
+
+	"furniture": {
+		"storage_box": {
+			"icon": "res://assets/furniture/storage_box.svg",
+			"sprite": "res://assets/furniture/storage_box_large.svg",
+			"fallback_emoji": "📦",
+			"size": [80, 80]
+		},
+		"marketplace": {
+			"icon": "res://assets/furniture/marketplace.svg",
+			"sprite": "res://assets/furniture/marketplace_large.svg",
+			"fallback_emoji": "🖥️",
+			"size": [80, 80]
+		}
+	},
+
+	"ui": {
+		"gloves_button": {
+			"icon": "res://assets/ui/gloves_icon.svg",
+			"fallback_emoji": "⚗️",
+			"size": [60, 60]
+		},
+		"profile_button": {
+			"icon": "res://assets/ui/profile_icon.svg",
+			"fallback_emoji": "📊",
+			"size": [40, 40]
+		},
+		"storage_button": {
+			"icon": "res://assets/ui/storage_icon.svg",
+			"fallback_emoji": "📦",
+			"size": [40, 40]
+		},
+		"marketplace_button": {
+			"icon": "res://assets/ui/marketplace_icon.svg",
+			"fallback_emoji": "🏪",
+			"size": [40, 40]
+		}
+	},
+
+	"elements": {
+		"lkC": {
+			"icon": "res://assets/elements/carbon.svg",
+			"image": "res://assets/elements/carbon_card.png",
+			"fallback_emoji": "⚫",
+			"rarity_0": "res://assets/elements/carbon_common.svg",
+			"rarity_1": "res://assets/elements/carbon_uncommon.svg",
+			"rarity_2": "res://assets/elements/carbon_rare.svg",
+			"rarity_3": "res://assets/elements/carbon_legendary.svg"
+		},
+		"lkO": {
+			"icon": "res://assets/elements/oxygen.svg",
+			"image": "res://assets/elements/oxygen_card.png",
+			"fallback_emoji": "🔵",
+			"rarity_0": "res://assets/elements/oxygen_common.svg",
+			"rarity_1": "res://assets/elements/oxygen_uncommon.svg",
+			"rarity_2": "res://assets/elements/oxygen_rare.svg",
+			"rarity_3": "res://assets/elements/oxygen_legendary.svg"
+		},
+		"lkH": {
+			"icon": "res://assets/elements/hydrogen.svg",
+			"image": "res://assets/elements/hydrogen_card.png",
+			"fallback_emoji": "⚪",
+			"rarity_0": "res://assets/elements/hydrogen_common.svg",
+			"rarity_1": "res://assets/elements/hydrogen_uncommon.svg",
+			"rarity_2": "res://assets/elements/hydrogen_rare.svg",
+			"rarity_3": "res://assets/elements/hydrogen_legendary.svg"
+		},
+		"lkC14": {
+			"icon": "res://assets/elements/carbon14.svg",
+			"image": "res://assets/elements/carbon14_card.png",
+			"fallback_emoji": "💎",
+			"rarity_2": "res://assets/elements/carbon14_rare.svg"
+		},
+		"CO2": {
+			"icon": "res://assets/elements/co2.svg",
+			"image": "res://assets/elements/co2_card.png",
+			"fallback_emoji": "💨",
+			"rarity_1": "res://assets/elements/co2_uncommon.svg"
+		},
+		"H2O": {
+			"icon": "res://assets/elements/h2o.svg",
+			"image": "res://assets/elements/h2o_card.png",
+			"fallback_emoji": "💧",
+			"rarity_1": "res://assets/elements/h2o_uncommon.svg"
+		},
+		"Coal": {
+			"icon": "res://assets/elements/coal.svg",
+			"image": "res://assets/elements/coal_card.png",
+			"fallback_emoji": "🪨",
+			"rarity_2": "res://assets/elements/coal_rare.svg"
+		},
+		"Carbon_X": {
+			"icon": "res://assets/elements/carbon_x.svg",
+			"image": "res://assets/elements/carbon_x_card.png",
+			"fallback_emoji": "✨",
+			"rarity_3": "res://assets/elements/carbon_x_legendary.svg"
+		}
+	},
+
+	"planets": {
+		"solana": {
+			"background": "res://assets/planets/solana_bg.svg",
+			"floor": "res://assets/planets/solana_floor.svg",
+			"icon": "res://assets/planets/solana_icon.svg",
+			"fallback_color": "#2c212b"
+		},
+		"base": {
+			"background": "res://assets/planets/base_bg.svg",
+			"floor": "res://assets/planets/base_floor.svg",
+			"icon": "res://assets/planets/base_icon.svg",
+			"fallback_color": "#0052ff"
+		},
+		"sui": {
+			"background": "res://assets/planets/sui_bg.svg",
+			"floor": "res://assets/planets/sui_floor.svg",
+			"icon": "res://assets/planets/sui_icon.svg",
+			"fallback_color": "#6fbcf0"
+		}
+	},
+
+	"reactions": {
+		"physical": {
+			"icon": "res://assets/reactions/physical.svg",
+			"fallback_emoji": "🔨"
+		},
+		"chemical": {
+			"icon": "res://assets/reactions/chemical.svg",
+			"fallback_emoji": "🧪"
+		},
+		"nuclear": {
+			"icon": "res://assets/reactions/nuclear.svg",
+			"fallback_emoji": "⚛️"
+		}
+	},
+
+	"effects": {
+		"success_particle": "res://assets/effects/success.svg",
+		"failure_particle": "res://assets/effects/failure.svg",
+		"discovery_particle": "res://assets/effects/discovery.svg",
+		"charge_particle": "res://assets/effects/charge.svg"
+	},
+
+	"tutorial": {
+		"arrow_left": "res://assets/tutorial/arrow_left.svg",
+		"arrow_right": "res://assets/tutorial/arrow_right.svg",
+		"arrow_up": "res://assets/tutorial/arrow_up.svg",
+		"arrow_down": "res://assets/tutorial/arrow_down.svg",
+		"tap_icon": "res://assets/tutorial/tap.svg"
+	}
+}

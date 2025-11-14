@@ -129,7 +129,11 @@ func _build_nft_metadata(element_data: Dictionary) -> Dictionary:
 
 ## Get element image URL (placeholder)
 func _get_element_image_url(element_id: String, rarity: int) -> String:
-	# In production, these would be actual hosted images or generated on-the-fly
+	# Use AssetManager to get proper image URL for NFT metadata
+	if AssetManager:
+		return AssetManager.get_element_image_url(element_id, rarity)
+
+	# Fallback if AssetManager not available
 	return "https://lenkinverse.com/images/elements/%s_rarity%d.png" % [element_id, rarity]
 
 ## Upload to Arweave
