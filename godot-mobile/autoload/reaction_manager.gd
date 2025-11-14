@@ -14,10 +14,11 @@ func load_reaction_database() -> void:
 	# Physical reactions (1 charge per unit)
 	reactions_db["physical"] = [
 		{
-			"reactants": {"lkC": 10},
+			"reactants": {"lkC": 5},
 			"products": {"Coal": 1},
 			"type": "compression",
-			"name": "Coal Formation"
+			"name": "Coal Formation",
+			"description": "Compress 5 lkC into Coal"
 		}
 	]
 
@@ -27,25 +28,33 @@ func load_reaction_database() -> void:
 			"reactants": {"lkC": 1, "lkO": 2},
 			"products": {"CO2": 1},
 			"type": "combustion",
-			"name": "Carbon Dioxide Formation"
+			"name": "Carbon Dioxide Formation",
+			"description": "Combine Carbon and Oxygen"
 		},
 		{
 			"reactants": {"lkH": 2, "lkO": 1},
 			"products": {"H2O": 1},
 			"type": "synthesis",
-			"name": "Water Formation"
+			"name": "Water Formation",
+			"description": "Combine Hydrogen and Oxygen"
 		}
 	]
 
-	# Nuclear reactions (5 charge per unit, requires isotope)
+	# Nuclear reactions (5 charge per unit, requires isotope catalyst)
+	# Each reaction consumes 0.5 volume units from isotope
 	reactions_db["nuclear"] = [
 		{
 			"reactants": {"lkC": 1},
-			"catalyst": "C14",
-			"products": {"lkN": 1},
-			"type": "beta_decay",
-			"name": "Carbon-14 Decay",
-			"success_rate": 0.05  # 5% chance
+			"catalyst": "lkC14",  # Raw isotope material
+			"catalyst_volume_consumed": 0.5,  # Each unit supports 2 reactions
+			"products": {"lkO": 2},
+			"type": "nuclear_fusion",
+			"name": "Carbon Fusion to Oxygen",
+			"description": "Use C14 catalyst to fuse Carbon into Oxygen",
+			"success_rate": 0.10,  # 10% chance
+			"failure_products": {"lkC": 1},  # Returns pure lkC on failure
+			"failure_discovery_chance": 0.001,  # 0.1% chance during failure
+			"failure_discovery_product": "Carbon_X"  # Undefined new material
 		}
 	]
 
@@ -88,9 +97,11 @@ func perform_reaction(reactants: Dictionary, mode: String, catalyst: Dictionary 
 	# Check for nuclear reaction success
 	if mode == "nuclear":
 		var success_rate = reaction.get("success_rate", 0.05)
-		if randf() > success_rate:
-			# Failed nuclear reaction - return some materials
-			return handle_failed_nuclear(reactants, charge_required)
+		var succeeded = randf() < success_rate
+
+		if not succeeded:
+			# Failed nuclear reaction - return materials and maybe discover new element
+			return handle_failed_nuclear(reactants, catalyst, reaction, charge_required)
 
 	# Consume reactants
 	if not InventoryManager.consume_elements(reactants):
@@ -99,9 +110,14 @@ func perform_reaction(reactants: Dictionary, mode: String, catalyst: Dictionary 
 			"error": "Failed to consume reactants"
 		}
 
-	# Consume catalyst if nuclear
+	# Consume catalyst volume if nuclear
 	if mode == "nuclear" and catalyst.has("id"):
-		InventoryManager.remove_isotope(catalyst["id"])
+		var volume_consumed = reaction.get("catalyst_volume_consumed", 0.5)
+		if not InventoryManager.consume_isotope_volume(catalyst["id"], volume_consumed):
+			return {
+				"success": false,
+				"error": "Failed to consume isotope volume"
+			}
 
 	# Consume charge
 	consume_gloves_charge(charge_required)
@@ -150,31 +166,49 @@ func reactants_match(provided: Dictionary, required: Dictionary) -> bool:
 
 	return true
 
-func handle_failed_nuclear(reactants: Dictionary, charge_used: int) -> Dictionary:
-	# Return 50-80% of materials on nuclear failure
-	var return_rate = randf_range(0.5, 0.8)
-	var returned = {}
+func handle_failed_nuclear(reactants: Dictionary, catalyst: Dictionary, reaction: Dictionary, charge_used: int) -> Dictionary:
+	# On nuclear failure:
+	# - Return pure reactant materials
+	# - 0.1% chance to discover new undefined material
+	# - Still consume isotope volume and charge
 
-	for element in reactants:
-		var amount_to_return = int(reactants[element] * return_rate)
-		if amount_to_return > 0:
-			returned[element] = amount_to_return
+	var failure_products = reaction.get("failure_products", {})
+	var discovery_chance = reaction.get("failure_discovery_chance", 0.001)
+	var discovery_product = reaction.get("failure_discovery_product", "Unknown")
 
 	# Consume originals
 	InventoryManager.consume_elements(reactants)
 
-	# Return some back
-	if not returned.is_empty():
-		InventoryManager.add_elements(returned)
+	# Consume isotope volume even on failure
+	if catalyst.has("id"):
+		var volume_consumed = reaction.get("catalyst_volume_consumed", 0.5)
+		InventoryManager.consume_isotope_volume(catalyst["id"], volume_consumed)
 
-	# Still consume charge
+	# Consume charge
 	consume_gloves_charge(charge_used)
+
+	# Return failure products (pure lkC)
+	if not failure_products.is_empty():
+		InventoryManager.add_elements(failure_products)
+
+	# Check for rare discovery during failure
+	var discovered_new = false
+	if randf() < discovery_chance:
+		# Discovered new undefined material!
+		InventoryManager.add_elements({discovery_product: 1})
+		discovered_new = true
+
+	var error_msg = "❌ Nuclear reaction failed!"
+	if discovered_new:
+		error_msg += "\n\n🌟 But discovered new material: %s!" % discovery_product
 
 	return {
 		"success": false,
-		"error": "Nuclear reaction failed! Returned %d%% of materials" % int(return_rate * 100),
-		"returned": returned,
-		"charge_used": charge_used
+		"error": error_msg,
+		"returned": failure_products,
+		"charge_used": charge_used,
+		"discovered_new": discovered_new,
+		"new_material": discovery_product if discovered_new else ""
 	}
 
 func check_if_new_discovery(products: Dictionary) -> bool:

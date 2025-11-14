@@ -4,9 +4,10 @@ extends Node
 signal inventory_changed()
 signal isotope_discovered(isotope_type: String)
 
-# Raw materials (unprocessed)
+# Raw materials (unprocessed) - includes raw isotopes
 var raw_materials: Dictionary = {
-	"lkC": 0
+	"lkC": 0,
+	"lkC14": 0  # Raw isotope material
 }
 
 # Elements (processed)
@@ -93,22 +94,28 @@ func consume_elements(elements_dict: Dictionary) -> bool:
 	save_inventory()
 	return true
 
-## Add discovered isotope
+## Add discovered isotope as raw material
 func add_isotope(isotope_type: String) -> void:
+	# Isotopes are discovered as raw materials with volume in units
+	# Volume is random between 12-28 units
+	# Volume decays over time (halves every 6 hours) AND consumed during reactions (0.5 per reaction)
+	var volume = randi_range(12, 28)
+
 	var current_time = Time.get_unix_time_from_system()
 	var isotope = {
 		"id": "isotope_%d" % current_time,
 		"type": isotope_type,
-		"volume": 1.0,  # Starts at 100% volume
+		"volume": float(volume),  # Units of raw isotope material
 		"discovered_at": current_time,
-		"last_decay_check": current_time,
-		"decay_time": current_time + (24 * 60 * 60)  # Still track final expiry
+		"last_decay_at": current_time,  # Track last decay time
 	}
 
 	isotopes.append(isotope)
 	isotope_discovered.emit(isotope_type)
 	inventory_changed.emit()
 	save_inventory()
+
+	print("Discovered %s with %d volume units (each unit = 2 reactions, halves every 6h)" % [isotope_type, volume])
 
 ## Remove isotope (used in reaction)
 func remove_isotope(isotope_id: String) -> bool:
@@ -121,36 +128,56 @@ func remove_isotope(isotope_id: String) -> bool:
 		return true
 	return false
 
-## Check for isotope volume decay (halves every 6 hours)
+## Consume isotope volume for reaction (0.5 units per reaction)
+func consume_isotope_volume(isotope_id: String, volume_to_consume: float) -> bool:
+	for isotope in isotopes:
+		if isotope.get("id") == isotope_id:
+			var current_volume = isotope.get("volume", 0.0)
+			if current_volume >= volume_to_consume:
+				isotope["volume"] = current_volume - volume_to_consume
+
+				# Remove isotope if volume depleted
+				if isotope["volume"] <= 0:
+					isotopes = isotopes.filter(func(i): return i.get("id") != isotope_id)
+
+				inventory_changed.emit()
+				save_inventory()
+				return true
+			return false
+	return false
+
+## Check for time-based isotope decay (halves every 6 hours)
 func _check_isotope_decay() -> void:
 	const DECAY_INTERVAL: int = 6 * 60 * 60  # 6 hours in seconds
-	const MIN_VOLUME: float = 0.06  # Remove when below 6% volume
-
 	var current_time = Time.get_unix_time_from_system()
 	var changed = false
 
 	for isotope in isotopes:
-		var last_check = isotope.get("last_decay_check", isotope.get("discovered_at", 0))
-		var time_since_check = current_time - last_check
+		var last_decay = isotope.get("last_decay_at", isotope.get("discovered_at", current_time))
+		var time_elapsed = current_time - last_decay
 
 		# Calculate how many 6-hour periods have passed
-		var decay_periods = int(time_since_check / DECAY_INTERVAL)
+		var decay_periods = int(time_elapsed / DECAY_INTERVAL)
 
 		if decay_periods > 0:
-			# Halve volume for each period: volume * (0.5 ^ periods)
-			var current_volume = isotope.get("volume", 1.0)
-			var new_volume = current_volume * pow(0.5, decay_periods)
+			# Apply decay: halve volume for each period
+			var current_volume = isotope.get("volume", 0.0)
+			for i in range(decay_periods):
+				current_volume *= 0.5
 
-			isotope["volume"] = new_volume
-			isotope["last_decay_check"] = last_check + (decay_periods * DECAY_INTERVAL)
+			isotope["volume"] = current_volume
+			isotope["last_decay_at"] = last_decay + (decay_periods * DECAY_INTERVAL)
 			changed = true
 
-	# Remove isotopes below minimum volume
+			print("Isotope %s decayed: %.2f units (decayed %d times)" % [isotope.get("type"), current_volume, decay_periods])
+
+	# Remove isotopes with depleted volume (from decay or reactions)
 	var original_size = isotopes.size()
-	isotopes = isotopes.filter(func(i): return i.get("volume", 1.0) >= MIN_VOLUME)
+	isotopes = isotopes.filter(func(i): return i.get("volume", 0) > 0)
 
 	if isotopes.size() < original_size:
 		changed = true
+		print("Removed %d depleted isotope(s)" % (original_size - isotopes.size()))
 
 	if changed:
 		inventory_changed.emit()
@@ -197,5 +224,14 @@ func load_inventory() -> void:
 		items = save_data.get("items", [])
 		raw_chunks = save_data.get("raw_chunks", [])
 		file.close()
+
+		# Ensure all isotopes have last_decay_at field for legacy saves
+		var current_time = Time.get_unix_time_from_system()
+		for isotope in isotopes:
+			if not isotope.has("last_decay_at"):
+				isotope["last_decay_at"] = isotope.get("discovered_at", current_time)
+			# Ensure volume is float
+			if isotope.has("volume") and typeof(isotope["volume"]) == TYPE_INT:
+				isotope["volume"] = float(isotope["volume"])
 
 		inventory_changed.emit()
