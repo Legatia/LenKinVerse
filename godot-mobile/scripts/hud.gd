@@ -5,10 +5,12 @@ extends CanvasLayer
 @onready var lkc_label: Label = $TopBar/LKCLabel
 @onready var raw_label: Label = $TopBar/RawLabel
 @onready var profile_button: Button = $TopBar/ProfileButton
+@onready var gloves_button: Button = $GlovesButton
 
 func _ready() -> void:
-	# Connect profile button
+	# Connect buttons
 	profile_button.pressed.connect(_on_profile_button_pressed)
+	gloves_button.pressed.connect(_on_gloves_button_pressed)
 
 	# Update stats on ready
 	update_stats()
@@ -76,3 +78,12 @@ func _on_profile_button_pressed() -> void:
 		get_tree().root.add_child(profile_instance)
 	else:
 		push_error("Failed to load profile UI scene")
+
+func _on_gloves_button_pressed() -> void:
+	# Load and show gloves UI
+	var gloves_scene = load("res://scenes/ui/gloves_ui.tscn")
+	if gloves_scene:
+		var gloves_instance = gloves_scene.instantiate()
+		get_tree().root.add_child(gloves_instance)
+	else:
+		push_error("Failed to load gloves UI scene")

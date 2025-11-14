@@ -91,47 +91,6 @@ vertical_alignment = 1
 shape = SubResource("RectangleShape2D_player")
 scale = Vector2(2.5, 2.5)
 
-[node name="GlovesStation" type="StaticBody2D" parent="." groups=["furniture"]]
-position = Vector2(180, 380)
-input_pickable = true
-script = ExtResource("3_interactable")
-zone_name = "Alchemy Gloves"
-scene_to_open = "res://scenes/ui/gloves_ui.tscn"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="GlovesStation"]
-shape = SubResource("RectangleShape2D_furniture")
-
-[node name="ColorRect" type="ColorRect" parent="GlovesStation"]
-offset_left = -40.0
-offset_top = -40.0
-offset_right = 40.0
-offset_bottom = 40.0
-mouse_filter = 2
-color = Color(0.960784, 0.619608, 0.0431373, 1)
-
-[node name="Label" type="Label" parent="GlovesStation/ColorRect"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-text = "⚗️"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="InteractionArea" type="Area2D" parent="GlovesStation"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="GlovesStation/InteractionArea"]
-shape = SubResource("RectangleShape2D_player")
-scale = Vector2(2.5, 2.5)
-
 [node name="Marketplace" type="StaticBody2D" parent="." groups=["furniture"]]
 position = Vector2(280, 520)
 input_pickable = true
@@ -234,3 +193,15 @@ theme_override_constants/outline_size = 4
 text = "[E] Interact"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="GlovesButton" type="Button" parent="HUD"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = -10.0
+grow_vertical = 0
+text = "⚗️"
+theme_override_font_sizes/font_size = 32

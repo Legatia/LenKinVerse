@@ -32,8 +32,8 @@ var tutorial_steps: Array[Dictionary] = [
 	{
 		"id": "gloves",
 		"title": "Alchemy Gloves ⚗️",
-		"message": "Click on the Gloves Station to analyze raw materials and perform reactions.\n\nLevel up your gloves by analyzing more materials!",
-		"highlight": "GlovesStation"
+		"message": "Click the Gloves button (⚗️) at the bottom-left to analyze raw materials and perform reactions.\n\nLevel up your gloves by analyzing more materials!",
+		"highlight": "GlovesButton"
 	},
 	{
 		"id": "marketplace",
@@ -50,7 +50,7 @@ var tutorial_steps: Array[Dictionary] = [
 	{
 		"id": "complete",
 		"title": "You're Ready!",
-		"message": "Start by opening the Gloves Station to analyze your first materials.\n\nGood luck, Alchemist! ⚗️✨",
+		"message": "Start by clicking the Gloves button (⚗️) to analyze your first materials.\n\nGood luck, Alchemist! ⚗️✨",
 		"highlight": ""
 	}
 ]
