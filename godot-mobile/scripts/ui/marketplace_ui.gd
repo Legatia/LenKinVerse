@@ -344,21 +344,24 @@ func _on_buy_sol_pressed() -> void:
 		show_message("❌ Insufficient SOL balance (have: %.3f)" % balance)
 		return
 
-	show_message("🔄 Swapping %s SOL for alSOL..." % sol_text)
+	show_message("🔄 Swapping %.3f SOL for alSOL..." % sol_amount)
 
-	# Call smart contract swap_sol_for_alsol instruction
-	var tx_data = {
-		"instruction": "swap_sol_for_alsol",
-		"sol_amount": sol_amount,
-		"program_id": "MKTPLCExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-	}
+	# Connect to transaction signals
+	var on_success = func(signature: String):
+		show_message("✅ Successfully swapped %.3f SOL → %.3f alSOL!\nSignature: %s" % [sol_amount, sol_amount, signature])
+		sol_input.text = ""
+		update_wallet_info()
+		WalletManager.transaction_completed.disconnect(on_success)
 
-	await WalletManager.sign_transaction(tx_data)
-	await WalletManager.transaction_completed
+	var on_failure = func(error: String):
+		show_message("❌ Swap failed: %s" % error)
+		WalletManager.transaction_failed.disconnect(on_failure)
 
-	show_message("✅ Successfully swapped %.3f SOL → %.3f alSOL!" % [sol_amount, sol_amount])
-	sol_input.text = ""
-	update_wallet_info()
+	WalletManager.transaction_completed.connect(on_success)
+	WalletManager.transaction_failed.connect(on_failure)
+
+	# Call blockchain integration method
+	WalletManager.swap_sol_for_alsol(sol_amount)
 
 func _on_buy_lkc_pressed() -> void:
 	if not WalletManager.is_connected:
@@ -400,26 +403,29 @@ func _on_buy_lkc_pressed() -> void:
 
 	show_message("🔄 Swapping %d LKC for %.3f alSOL..." % [lkc_amount, alsol_amount])
 
-	# Consume LKC from inventory
-	if not InventoryManager.consume_elements({"lkC": lkc_amount}):
-		show_message("❌ Failed to consume LKC")
-		return
+	# Connect to transaction signals
+	var on_success = func(signature: String):
+		# Consume LKC from inventory on successful swap
+		if InventoryManager.consume_elements({"lkC": lkc_amount}):
+			# Update swap history
+			weekly_alsol_used_lamports += alsol_lamports
+			save_swap_history()
+			update_alsol_ui()
 
-	# Call smart contract swap_lkc_for_alsol instruction
-	var tx_data = {
-		"instruction": "swap_lkc_for_alsol",
-		"lkc_amount": lkc_amount,
-		"program_id": "MKTPLCExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-	}
+			show_message("✅ Successfully swapped %d LKC → %.3f alSOL!\nSignature: %s" % [lkc_amount, alsol_amount, signature])
+			lkc_input.text = ""
+			update_wallet_info()
+		else:
+			show_message("⚠️ Swap succeeded but failed to consume LKC from inventory")
 
-	await WalletManager.sign_transaction(tx_data)
-	await WalletManager.transaction_completed
+		WalletManager.transaction_completed.disconnect(on_success)
 
-	# Update swap history
-	weekly_alsol_used_lamports += alsol_lamports
-	save_swap_history()
-	update_alsol_ui()
+	var on_failure = func(error: String):
+		show_message("❌ Swap failed: %s" % error)
+		WalletManager.transaction_failed.disconnect(on_failure)
 
-	show_message("✅ Successfully swapped %d LKC → %.3f alSOL!" % [lkc_amount, alsol_amount])
-	lkc_input.text = ""
-	update_wallet_info()
+	WalletManager.transaction_completed.connect(on_success)
+	WalletManager.transaction_failed.connect(on_failure)
+
+	# Call blockchain integration method
+	WalletManager.swap_lkc_for_alsol(lkc_amount)
