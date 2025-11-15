@@ -1,0 +1,37 @@
+{
+  "rarity_levels": {
+    "0": {
+      "name": "Common",
+      "color": "#9CA3AF",
+      "description": "Basic elements found everywhere"
+    },
+    "1": {
+      "name": "Uncommon",
+      "color": "#10B981",
+      "description": "Simple compounds created through reactions"
+    },
+    "2": {
+      "name": "Rare",
+      "color": "#3B82F6",
+      "description": "Processed materials requiring advanced techniques"
+    },
+    "3": {
+      "name": "Legendary",
+      "color": "#8B5CF6",
+      "description": "Extremely rare or special materials"
+    }
+  },
+  "elements": {
+    "lkC": 0,
+    "lkO": 0,
+    "lkH": 0,
+    "lkN": 0,
+    "lkSi": 0,
+    "CO2": 1,
+    "H2O": 1,
+    "Coal": 2,
+    "lkC14": 2,
+    "Carbon_X": 3
+  },
+  "default_rarity": 0
+}

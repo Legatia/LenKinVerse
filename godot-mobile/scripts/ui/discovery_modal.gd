@@ -40,18 +40,21 @@ func show_discovery(elem_id: String, discovery_method: String, rarity: int = 0) 
 
 	element_name_label.text = _get_element_full_name(elem_id)
 
-	# Show rarity
-	var rarity_names = ["Common", "Uncommon", "Rare", "Legendary"]
-	var rarity_colors = [
-		Color(0.61, 0.64, 0.67),  # Gray
-		Color(0.06, 0.72, 0.51),  # Green
-		Color(0.23, 0.51, 0.96),  # Blue
-		Color(0.55, 0.36, 0.97)   # Purple
-	]
+	# Show rarity from config
+	var rarity_levels = ReactionManager.rarity_config.get("rarity_levels", {})
+	var rarity_str = str(rarity)
 
-	if rarity < rarity_names.size():
-		rarity_label.text = "⭐ %s" % rarity_names[rarity]
-		rarity_label.add_theme_color_override("font_color", rarity_colors[rarity])
+	if rarity_levels.has(rarity_str):
+		var rarity_data = rarity_levels[rarity_str]
+		var rarity_name = rarity_data.get("name", "Common")
+		var rarity_color = Color(rarity_data.get("color", "#9CA3AF"))
+
+		rarity_label.text = "⭐ %s" % rarity_name
+		rarity_label.add_theme_color_override("font_color", rarity_color)
+	else:
+		# Fallback if config missing
+		rarity_label.text = "⭐ Common"
+		rarity_label.add_theme_color_override("font_color", Color(0.61, 0.64, 0.67))
 
 	# Show description
 	description_label.text = DiscoveryManager.get_element_description(elem_id)

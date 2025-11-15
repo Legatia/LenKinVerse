@@ -7,8 +7,39 @@ signal reaction_failed(reason: String)
 # Reaction database
 var reactions_db: Dictionary = {}
 
+# Rarity configuration
+var rarity_config: Dictionary = {}
+
 func _ready() -> void:
+	load_rarity_config()
 	load_reaction_database()
+
+func load_rarity_config() -> void:
+	var config_path = "res://assets/rarity_config.json"
+
+	if not FileAccess.file_exists(config_path):
+		push_error("Rarity config not found at: " + config_path)
+		rarity_config = {"elements": {}, "default_rarity": 0, "rarity_levels": {}}
+		return
+
+	var file = FileAccess.open(config_path, FileAccess.READ)
+	if not file:
+		push_error("Failed to open rarity config")
+		rarity_config = {"elements": {}, "default_rarity": 0, "rarity_levels": {}}
+		return
+
+	var json_string = file.get_as_text()
+	file.close()
+
+	var json = JSON.new()
+	var error = json.parse(json_string)
+
+	if error == OK:
+		rarity_config = json.data
+		print("Loaded rarity config with %d elements" % rarity_config.get("elements", {}).size())
+	else:
+		push_error("Failed to parse rarity config JSON: " + json.get_error_message())
+		rarity_config = {"elements": {}, "default_rarity": 0, "rarity_levels": {}}
 
 func load_reaction_database() -> void:
 	# Physical reactions (1 charge per unit)
@@ -290,18 +321,10 @@ func consume_gloves_charge(amount: int) -> void:
 
 ## Get element rarity for discovery tracking
 func get_element_rarity(element_id: String) -> int:
-	# Basic elements: Common (0)
-	if element_id in ["lkC", "lkO", "lkH", "lkN", "lkSi"]:
-		return 0
-	# Simple compounds: Uncommon (1)
-	elif element_id in ["CO2", "H2O"]:
-		return 1
-	# Processed materials: Rare (2)
-	elif element_id in ["Coal", "lkC14"]:
-		return 2
-	# Unknown/special: Legendary (3)
-	elif element_id in ["Carbon_X"]:
-		return 3
-	# Default
-	else:
-		return 0
+	# Check config for element rarity
+	var elements = rarity_config.get("elements", {})
+	if elements.has(element_id):
+		return elements[element_id]
+
+	# Use default rarity if not found
+	return rarity_config.get("default_rarity", 0)
