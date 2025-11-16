@@ -119,6 +119,22 @@ func get_balance() -> float:
 	else:
 		return _mock_get_balance()
 
+## Get alSOL balance
+func get_alsol_balance() -> float:
+	"""
+	Get current alSOL balance (in-game staked SOL currency)
+	Returns cached value
+	"""
+	return alsol_balance
+
+## Get wallet address
+func get_wallet_address() -> String:
+	"""
+	Get current connected wallet address
+	Returns empty string if not connected
+	"""
+	return wallet_address
+
 # ============================================
 # Native Plugin Signal Handlers
 # ============================================

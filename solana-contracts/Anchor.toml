@@ -1,0 +1,26 @@
+[toolchain]
+package_manager = "yarn"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+element_token_factory = "DFEdDQp4Ybv1LRtM6EHu8Nxwt1Bvpo6maFJFBkGj5WTQ"
+item_marketplace = "F7TehQFrx3XkuMsLPcmKLz44UxTWWfyodNLSungdqoRX"
+treasury_bridge = "BrdgPYm3GvXFTEHhgN2YXg5WqV9gLBYL7hdYbkBhxA1"
+
+[programs.devnet]
+element_token_factory = "DFEdDQp4Ybv1LRtM6EHu8Nxwt1Bvpo6maFJFBkGj5WTQ"
+item_marketplace = "F7TehQFrx3XkuMsLPcmKLz44UxTWWfyodNLSungdqoRX"
+treasury_bridge = "BrdgPYm3GvXFTEHhgN2YXg5WqV9gLBYL7hdYbkBhxA1"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run mocha -t 1000000 tests/"

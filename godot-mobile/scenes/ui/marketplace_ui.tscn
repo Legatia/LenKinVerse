@@ -236,9 +236,11 @@ theme_override_constants/separation = 10
 layout_mode = 2
 text = "💰 Get alSOL (In-Game Currency)"
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="InfoLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 11
 text = "alSOL is backed 1:1 by real SOL and used for all marketplace transactions."
 autowrap_mode = 3
 
@@ -252,9 +254,11 @@ size_flags_vertical = 3
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 15
+size_flags_vertical = 3
+theme_override_constants/separation = 20
 
 [node name="SOLPanel" type="Panel" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/SOLPanel"]
@@ -268,16 +272,22 @@ offset_right = -10.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 8
 
 [node name="OptionTitle" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/SOLPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 12
 text = "Option 1: Buy with SOL"
+autowrap_mode = 3
+clip_text = true
 
 [node name="Description" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/SOLPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 10
 text = "1 SOL = 1 alSOL (1:1 ratio)"
+autowrap_mode = 3
+clip_text = true
 
 [node name="AmountContainer" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/SOLPanel/VBoxContainer"]
 layout_mode = 2
@@ -295,7 +305,14 @@ placeholder_text = "1.0"
 [node name="ResultLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/SOLPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 10
 text = "→ You get: 0.000 alSOL"
+autowrap_mode = 3
+clip_text = true
+
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/SOLPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="BuySOLButton" type="Button" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/SOLPanel/VBoxContainer"]
 layout_mode = 2
@@ -306,6 +323,7 @@ custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="LKCPanel" type="Panel" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel"]
@@ -319,16 +337,22 @@ offset_right = -10.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 8
 
 [node name="OptionTitle" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 12
 text = "Option 2: Buy with LKC"
+autowrap_mode = 3
+clip_text = true
 
 [node name="Description" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 10
 text = "1,000,000 LKC = 1 alSOL"
+autowrap_mode = 3
+clip_text = true
 
 [node name="AmountContainer" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
 layout_mode = 2
@@ -346,9 +370,13 @@ placeholder_text = "100000"
 [node name="ResultLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 10
 text = "→ You get: 0.000 alSOL"
+autowrap_mode = 3
+clip_text = true
 
 [node name="LimitPanel" type="Panel" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer/LimitPanel"]
@@ -362,13 +390,18 @@ offset_right = -5.0
 offset_bottom = -5.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 3
 
 [node name="LimitTitle" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer/LimitPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.62, 0.04, 1)
+theme_override_font_sizes/font_size = 10
 text = "⚠️ Weekly Limit: 1.000 alSOL"
+autowrap_mode = 3
+clip_text = true
 
 [node name="ProgressBar" type="ProgressBar" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer/LimitPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 15)
 layout_mode = 2
 max_value = 1.0
 value = 0.45
@@ -376,26 +409,37 @@ show_percentage = false
 
 [node name="UsageLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer/LimitPanel/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 9
 text = "Used: 0.000 / 1.000 alSOL"
 horizontal_alignment = 1
+autowrap_mode = 3
+clip_text = true
 
 [node name="ResetLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer/LimitPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 9
 text = "Resets in: 5d 3h 22m"
 horizontal_alignment = 1
-
-[node name="BuyLKCButton" type="Button" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
-layout_mode = 2
-text = "BUY WITH LKC"
+autowrap_mode = 3
+clip_text = true
 
 [node name="MinLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 9
 text = "Min: 0.001 alSOL (1,000 LKC)"
 horizontal_alignment = 1
+autowrap_mode = 3
+clip_text = true
+
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BuyLKCButton" type="Button" parent="Panel/VBoxContainer/TabContainer/Get alSOL/ScrollContainer/VBoxContainer/LKCPanel/VBoxContainer"]
+layout_mode = 2
+text = "BUY WITH LKC"
 
 [node name="Mint" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer"]
 visible = false

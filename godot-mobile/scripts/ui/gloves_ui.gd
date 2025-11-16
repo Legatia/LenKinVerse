@@ -21,6 +21,13 @@ const LEVEL_CONFIG = {
 @onready var progress_label: Label = $Panel/ProgressLabel
 @onready var raw_lkc_label: Label = $Panel/TabContainer/Analyze/RawLKCLabel
 
+# Multiply tab nodes
+@onready var element_selector: OptionButton = $Panel/TabContainer/Multiply/ElementSelector
+@onready var amount_spinbox: SpinBox = $Panel/TabContainer/Multiply/AmountSpinBox
+@onready var multiply_cost_label: Label = $Panel/TabContainer/Multiply/CostLabel
+@onready var multiply_result_label: Label = $Panel/TabContainer/Multiply/ResultLabel
+@onready var multiply_button: Button = $Panel/TabContainer/Multiply/MultiplyButton
+
 # Reactions tab nodes (declared early for _ready access)
 @onready var elements_grid: GridContainer = $Panel/TabContainer/Reactions/ElementsContainer/ElementsGrid
 @onready var physical_button: Button = $Panel/TabContainer/Reactions/ModeSelector/PhysicalButton
@@ -38,6 +45,12 @@ func _ready() -> void:
 	# Connect to inventory updates
 	InventoryManager.inventory_changed.connect(update_ui)
 	InventoryManager.inventory_changed.connect(populate_reaction_elements)
+	InventoryManager.inventory_changed.connect(populate_multiply_elements)
+
+	# Connect multiply tab
+	element_selector.item_selected.connect(_on_multiply_element_selected)
+	amount_spinbox.value_changed.connect(_on_multiply_amount_changed)
+	multiply_button.pressed.connect(_on_multiply_button_pressed)
 
 	# Connect reaction buttons
 	physical_button.pressed.connect(func(): _on_mode_selected("physical"))
@@ -51,8 +64,9 @@ func _ready() -> void:
 		var slot = reactant_slots.get_child(i)
 		slot.pressed.connect(func(): _on_reactant_slot_pressed(i))
 
-	# Populate elements list
+	# Populate elements lists
 	populate_reaction_elements()
+	populate_multiply_elements()
 
 func update_ui() -> void:
 	# Update charge bar
@@ -123,8 +137,14 @@ func analyze_raw_material(count: int) -> void:
 		var efficiency = 0.95
 		var final_amount = int(base_amount * efficiency)
 
-		# Roll for isotope (0.1% chance)
-		var isotope_found = randf() < 0.001
+		# Check if analyzing unregistered element (10x isotope rate)
+		var is_analyzing_unregistered = false
+		# TODO: Implement detection of what element is being analyzed
+		# For now, isotope chance is 0.1% for regular, 1% for unregistered
+
+		# Roll for isotope (0.1% chance, or 1% for unregistered elements)
+		var isotope_chance = 0.001 if not is_analyzing_unregistered else 0.01
+		var isotope_found = randf() < isotope_chance
 
 		# Consume raw material and charge
 		InventoryManager.consume_raw_material("lkC", final_amount)
@@ -158,6 +178,64 @@ func analyze_raw_material(count: int) -> void:
 
 	# Show results
 	show_analysis_results(results)
+
+## Multiply unregistered element using lkC as catalyst
+func multiply_unregistered_element(element_id: String, count: int) -> void:
+	"""
+	Special power: Multiply unregistered elements using lkC as catalyst
+	Cost: 2 charge per unit (double normal)
+	Requires: lkC as catalyst
+	"""
+	var unregistered_amount = InventoryManager.get_unregistered_element_amount(element_id)
+	if unregistered_amount < count:
+		show_message("Not enough unregistered %s! Have %d, need %d" % [element_id, unregistered_amount, count])
+		return
+
+	# Check charge (2x normal cost)
+	var charge_cost = count * 2
+	if charge < charge_cost:
+		show_message("Not enough charge! Need %d ⚡ (2x cost for multiplication)" % charge_cost)
+		return
+
+	# Check lkC catalyst (need lkC as base material)
+	var lkc_catalyst_needed = count * 5  # 5 lkC per multiplication
+	var lkc_available = InventoryManager.get_element_amount("lkC")
+	if lkc_available < lkc_catalyst_needed:
+		show_message("Not enough lkC catalyst! Need %d lkC" % lkc_catalyst_needed)
+		return
+
+	# Perform multiplication
+	var processing_speed = LEVEL_CONFIG[level]["speed"]
+	var results = []
+
+	for i in range(count):
+		# Consume resources
+		InventoryManager.consume_unregistered_element(element_id, 1)
+		InventoryManager.consume_elements({"lkC": lkc_catalyst_needed / count})
+		charge -= 2
+
+		# Output: 2 units of the same unregistered element
+		InventoryManager.add_unregistered_element(element_id, 2)
+
+		results.append({
+			"input": 1,
+			"output": 2,
+			"catalyst_used": lkc_catalyst_needed / count
+		})
+
+		# Wait for processing
+		if i < count - 1:
+			await get_tree().create_timer(processing_speed).timeout
+
+	# Save and update
+	save_gloves_data()
+	update_ui()
+
+	# Show results
+	var message = "✨ MULTIPLICATION COMPLETE ✨\n\n"
+	message += "Multiplied: %d %s → %d %s\n" % [count, element_id, count * 2, element_id]
+	message += "Used: %d lkC catalyst, %d ⚡" % [lkc_catalyst_needed, charge_cost]
+	show_message(message)
 
 func check_level_up() -> void:
 	var next_threshold = get_next_level_threshold()
@@ -242,6 +320,103 @@ func load_gloves_data() -> void:
 
 func _on_close_button_pressed() -> void:
 	queue_free()
+
+# ========================================
+# MULTIPLY TAB
+# ========================================
+
+var selected_unregistered_element: String = ""
+var preselected_element: String = ""  # For auto-selection from storage
+
+func set_preselected_element(element_id: String) -> void:
+	"""Auto-select an unregistered element when opened from storage"""
+	preselected_element = element_id
+
+func populate_multiply_elements() -> void:
+	if not element_selector:
+		return
+
+	# Clear existing items
+	element_selector.clear()
+
+	# Add all unregistered elements
+	var has_elements = false
+	for element in InventoryManager.unregistered_elements:
+		var amount = InventoryManager.unregistered_elements[element]
+		if amount > 0:
+			element_selector.add_item("%s (×%d)" % [element, amount])
+			element_selector.set_item_metadata(element_selector.item_count - 1, element)
+			has_elements = true
+
+			# Auto-select if this is the preselected element
+			if element == preselected_element:
+				element_selector.select(element_selector.item_count - 1)
+				selected_unregistered_element = element
+
+	if not has_elements:
+		element_selector.add_item("(No unregistered elements)")
+		element_selector.disabled = true
+		multiply_button.disabled = true
+	else:
+		element_selector.disabled = false
+		multiply_button.disabled = false
+
+		# Select first element if none selected
+		if selected_unregistered_element.is_empty() and element_selector.item_count > 0:
+			element_selector.select(0)
+			selected_unregistered_element = element_selector.get_item_metadata(0)
+
+	update_multiply_ui()
+
+func _on_multiply_element_selected(index: int) -> void:
+	if index >= 0:
+		selected_unregistered_element = element_selector.get_item_metadata(index)
+		update_multiply_ui()
+
+func _on_multiply_amount_changed(value: float) -> void:
+	update_multiply_ui()
+
+func update_multiply_ui() -> void:
+	if not multiply_cost_label or not multiply_result_label:
+		return
+
+	var count = int(amount_spinbox.value)
+
+	# Calculate costs
+	var lkc_cost = count * 5
+	var charge_cost = count * 2
+
+	# Calculate results
+	var output = count * 2
+
+	# Update labels
+	multiply_cost_label.text = "Total Cost: %d lkC, %d ⚡" % [lkc_cost, charge_cost]
+	multiply_result_label.text = "Result: %d → %d elements" % [count, output]
+
+	# Update button state
+	if selected_unregistered_element.is_empty():
+		multiply_button.disabled = true
+		return
+
+	var unregistered_amount = InventoryManager.get_unregistered_element_amount(selected_unregistered_element)
+	var lkc_available = InventoryManager.get_element_amount("lkC")
+
+	multiply_button.disabled = (
+		unregistered_amount < count or
+		lkc_available < lkc_cost or
+		charge < charge_cost
+	)
+
+func _on_multiply_button_pressed() -> void:
+	if selected_unregistered_element.is_empty():
+		show_message("No element selected!")
+		return
+
+	var count = int(amount_spinbox.value)
+	await multiply_unregistered_element(selected_unregistered_element, count)
+
+	# Refresh UI
+	populate_multiply_elements()
 
 # ========================================
 # REACTIONS TAB

@@ -163,16 +163,21 @@ func _mint_token(element: String, amount: int) -> void:
 	}
 
 	# Connect to transaction signals
-	var on_success = func(signature: String):
+	var on_success: Callable
+	var on_failure: Callable
+
+	on_success = func(signature: String):
 		show_message("✅ NFT minted successfully!\nSignature: %s" % signature)
 		# Consume elements from inventory
 		InventoryManager.consume_elements({element: amount})
 		# Refresh UI
 		populate_mintable_items()
 		WalletManager.transaction_completed.disconnect(on_success)
+		WalletManager.transaction_failed.disconnect(on_failure)
 
-	var on_failure = func(error: String):
+	on_failure = func(error: String):
 		show_message("❌ Minting failed: %s" % error)
+		WalletManager.transaction_completed.disconnect(on_success)
 		WalletManager.transaction_failed.disconnect(on_failure)
 
 	WalletManager.transaction_completed.connect(on_success)
@@ -229,19 +234,19 @@ func _on_close_button_pressed() -> void:
 
 func load_swap_history() -> void:
 	if not FileAccess.file_exists("user://swap_history.save"):
-		week_start_time = Time.get_unix_time_from_system()
+		week_start_time = int(Time.get_unix_time_from_system())
 		weekly_alsol_used_lamports = 0
 		return
 
 	var file = FileAccess.open("user://swap_history.save", FileAccess.READ)
 	if file:
 		var data = file.get_var()
-		week_start_time = data.get("week_start", Time.get_unix_time_from_system())
+		week_start_time = data.get("week_start", int(Time.get_unix_time_from_system()))
 		weekly_alsol_used_lamports = data.get("weekly_used", 0)
 		file.close()
 
 	# Check if week has passed, reset if so
-	var current_time = Time.get_unix_time_from_system()
+	var current_time = int(Time.get_unix_time_from_system())
 	if current_time - week_start_time >= WEEK_IN_SECONDS:
 		week_start_time = current_time
 		weekly_alsol_used_lamports = 0
@@ -267,7 +272,7 @@ func update_alsol_ui() -> void:
 	usage_label.text = "Used: %.3f / %.3f alSOL" % [used_alsol, max_alsol]
 
 	# Calculate time until reset
-	var current_time = Time.get_unix_time_from_system()
+	var current_time = int(Time.get_unix_time_from_system())
 	var time_until_reset = WEEK_IN_SECONDS - (current_time - week_start_time)
 	var days = int(time_until_reset / 86400)
 	var hours = int((time_until_reset % 86400) / 3600)
@@ -347,14 +352,19 @@ func _on_buy_sol_pressed() -> void:
 	show_message("🔄 Swapping %.3f SOL for alSOL..." % sol_amount)
 
 	# Connect to transaction signals
-	var on_success = func(signature: String):
+	var on_success: Callable
+	var on_failure: Callable
+
+	on_success = func(signature: String):
 		show_message("✅ Successfully swapped %.3f SOL → %.3f alSOL!\nSignature: %s" % [sol_amount, sol_amount, signature])
 		sol_input.text = ""
 		update_wallet_info()
 		WalletManager.transaction_completed.disconnect(on_success)
+		WalletManager.transaction_failed.disconnect(on_failure)
 
-	var on_failure = func(error: String):
+	on_failure = func(error: String):
 		show_message("❌ Swap failed: %s" % error)
+		WalletManager.transaction_completed.disconnect(on_success)
 		WalletManager.transaction_failed.disconnect(on_failure)
 
 	WalletManager.transaction_completed.connect(on_success)
@@ -404,7 +414,10 @@ func _on_buy_lkc_pressed() -> void:
 	show_message("🔄 Swapping %d LKC for %.3f alSOL..." % [lkc_amount, alsol_amount])
 
 	# Connect to transaction signals
-	var on_success = func(signature: String):
+	var on_success: Callable
+	var on_failure: Callable
+
+	on_success = func(signature: String):
 		# Consume LKC from inventory on successful swap
 		if InventoryManager.consume_elements({"lkC": lkc_amount}):
 			# Update swap history
@@ -419,9 +432,11 @@ func _on_buy_lkc_pressed() -> void:
 			show_message("⚠️ Swap succeeded but failed to consume LKC from inventory")
 
 		WalletManager.transaction_completed.disconnect(on_success)
+		WalletManager.transaction_failed.disconnect(on_failure)
 
-	var on_failure = func(error: String):
+	on_failure = func(error: String):
 		show_message("❌ Swap failed: %s" % error)
+		WalletManager.transaction_completed.disconnect(on_success)
 		WalletManager.transaction_failed.disconnect(on_failure)
 
 	WalletManager.transaction_completed.connect(on_success)

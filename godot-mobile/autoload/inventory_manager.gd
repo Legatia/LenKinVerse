@@ -15,6 +15,10 @@ var elements: Dictionary = {
 	"lkC": 0
 }
 
+# Unregistered elements (have special perks)
+var unregistered_elements: Dictionary = {}
+# Format: {"element_id": amount}
+
 # Isotopes with decay timers
 var isotopes: Array[Dictionary] = []
 
@@ -51,6 +55,10 @@ func add_raw_material(element: String, amount: int) -> void:
 	if not raw_materials.has(element):
 		raw_materials[element] = 0
 	raw_materials[element] += amount
+
+	# Roll for wild spawns of registered elements
+	_roll_wild_spawns(element, amount)
+
 	inventory_changed.emit()
 	save_inventory()
 
@@ -93,6 +101,51 @@ func consume_elements(elements_dict: Dictionary) -> bool:
 	inventory_changed.emit()
 	save_inventory()
 	return true
+
+## Add unregistered element
+func add_unregistered_element(element_id: String, amount: int) -> void:
+	if not unregistered_elements.has(element_id):
+		unregistered_elements[element_id] = 0
+	unregistered_elements[element_id] += amount
+	inventory_changed.emit()
+	save_inventory()
+	print("Added %d unregistered %s (10x isotope rate, can multiply with gloves)" % [amount, element_id])
+
+## Consume unregistered element
+func consume_unregistered_element(element_id: String, amount: int) -> bool:
+	if not unregistered_elements.has(element_id) or unregistered_elements[element_id] < amount:
+		return false
+
+	unregistered_elements[element_id] -= amount
+	if unregistered_elements[element_id] <= 0:
+		unregistered_elements.erase(element_id)
+
+	inventory_changed.emit()
+	save_inventory()
+	return true
+
+## Get unregistered element amount
+func get_unregistered_element_amount(element_id: String) -> int:
+	return unregistered_elements.get(element_id, 0)
+
+## Check if element is unregistered in inventory
+func has_unregistered_element(element_id: String) -> bool:
+	return unregistered_elements.has(element_id) and unregistered_elements[element_id] > 0
+
+## Convert unregistered element to registered (when element gets registered globally)
+func convert_unregistered_to_registered(element_id: String) -> void:
+	if unregistered_elements.has(element_id):
+		var amount = unregistered_elements[element_id]
+		unregistered_elements.erase(element_id)
+
+		# Add to regular elements
+		if not elements.has(element_id):
+			elements[element_id] = 0
+		elements[element_id] += amount
+
+		inventory_changed.emit()
+		save_inventory()
+		print("Converted %d unregistered %s to registered (perks lost)" % [amount, element_id])
 
 ## Add discovered isotope as raw material
 func add_isotope(isotope_type: String) -> void:
@@ -200,6 +253,7 @@ func save_inventory() -> void:
 	var save_data = {
 		"raw_materials": raw_materials,
 		"elements": elements,
+		"unregistered_elements": unregistered_elements,
 		"isotopes": isotopes,
 		"items": items,
 		"raw_chunks": raw_chunks
@@ -220,6 +274,7 @@ func load_inventory() -> void:
 		var save_data = file.get_var()
 		raw_materials = save_data.get("raw_materials", {"lkC": 0})
 		elements = save_data.get("elements", {"lkC": 0})
+		unregistered_elements = save_data.get("unregistered_elements", {})
 		isotopes = save_data.get("isotopes", [])
 		items = save_data.get("items", [])
 		raw_chunks = save_data.get("raw_chunks", [])
@@ -235,3 +290,49 @@ func load_inventory() -> void:
 				isotope["volume"] = float(isotope["volume"])
 
 		inventory_changed.emit()
+
+## ========================================
+## WILD SPAWN SYSTEM
+## ========================================
+
+## Roll for wild spawns when collecting raw materials
+func _roll_wild_spawns(collected_element: String, amount: int) -> void:
+	"""
+	When collecting raw materials (e.g., lkC), roll for registered element spawns
+	Only applies to basic elements like lkC that are collected from walking/mining
+	"""
+	# Only roll for basic collection elements
+	if collected_element not in ["lkC", "lkO", "lkN", "lkH", "lkSi"]:
+		return
+
+	# Get all tradeable elements
+	var tradeable_elements = DiscoveryManager.get_tradeable_elements()
+	if tradeable_elements.is_empty():
+		return
+
+	# Roll for each unit collected
+	for i in range(amount):
+		# Check each tradeable element
+		for element_id in tradeable_elements:
+			var spawn_chance = DiscoveryManager.get_wild_spawn_chance(element_id)
+
+			# Roll for spawn
+			if randf() < spawn_chance:
+				# Wild spawn discovered!
+				_add_wild_spawn(element_id)
+
+## Add wild spawn to inventory
+func _add_wild_spawn(element_id: String) -> void:
+	"""Add a wild-spawned registered element (as raw material first)"""
+	# Add as raw material
+	if not raw_materials.has("raw_" + element_id):
+		raw_materials["raw_" + element_id] = 0
+	raw_materials["raw_" + element_id] += 1
+
+	print("✨ WILD SPAWN! Found 1 raw %s" % element_id)
+
+	# Track in discovery stats
+	DiscoveryManager.track_collection(element_id, 1, "wild_spawn")
+
+	# Emit signal for UI notification
+	inventory_changed.emit()

@@ -1,0 +1,111 @@
+# Godot 4.x
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+*.translation
+
+# Godot builds
+*.exe
+*.pck
+*.zip
+*.apk
+*.aab
+*.dmg
+*.app
+*.ipa
+*.x86_64
+*.x86
+*.32
+*.64
+
+# Godot generated files
+*.import
+.mono/
+data_*/
+mono_crash.*.json
+
+# Godot user-specific files
+user://
+*.save
+
+# Godot temporary files
+*.bak
+*~.nib
+.directory
+
+# Solana/Anchor
+solana-contracts/.anchor
+solana-contracts/target/
+solana-contracts/**/*.rs.bk
+solana-contracts/Cargo.lock
+solana-contracts/*.so
+solana-contracts/test-ledger/
+solana-contracts/.config/
+solana-program/.anchor
+solana-program/target/
+solana-program/**/*.rs.bk
+solana-program/Cargo.lock
+
+# Node
+node_modules/
+.yarn/
+yarn.lock
+package-lock.json
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Build artifacts
+dist/
+build/
+deploy/
+*.o
+*.obj
+*.a
+*.lib
+
+# Logs and temp files
+*.tmp
+*.temp
+*.log
+.cache/
+temp/
+
+# Documentation builds
+docs/_build/
+docs/.doctrees/
+
+# Claude Code
+.claude/
+
+# Git
+*.orig
+*.rej

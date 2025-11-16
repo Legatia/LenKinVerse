@@ -157,9 +157,12 @@ func perform_reaction(reactants: Dictionary, mode: String, catalyst: Dictionary 
 	var is_new = check_if_new_discovery(reaction["products"])
 	var new_elements: Array = []
 
-	# Register discoveries and track creation
+	# Register discoveries, apply tax, and track creation
+	var final_products: Dictionary = {}
+
 	for element in reaction["products"]:
 		var amount = reaction["products"][element]
+		var final_amount = amount
 
 		if DiscoveryManager.would_be_new_discovery(element):
 			# This is a first-time discovery!
@@ -167,11 +170,33 @@ func perform_reaction(reactants: Dictionary, mode: String, catalyst: Dictionary 
 			var rarity = get_element_rarity(element)
 			DiscoveryManager.discover_element(element, reaction.get("type", "reaction"), rarity)
 		else:
-			# Already discovered - just track creation
-			DiscoveryManager.track_collection(element, amount, "reaction")
+			# Already discovered - check if registered and apply tax
+			if DiscoveryManager.is_element_registered(element):
+				# Apply 10% tax
+				var tax_amount = int(amount * 0.1)
 
-	# Add products to inventory
-	InventoryManager.add_elements(reaction["products"])
+				# Check if element is tradeable (lock period over)
+				var is_tradeable = DiscoveryManager.is_element_tradeable(element)
+
+				if not is_tradeable:
+					# During lock period: 2x compensation
+					final_amount = amount * 2 - tax_amount
+					print("Lock period active for %s: 2x compensation (receive %d, tax %d)" % [element, final_amount, tax_amount])
+				else:
+					# After tradeable: normal 1x with tax
+					final_amount = amount - tax_amount
+					print("Element %s taxed: receive %d, tax %d to treasury" % [element, final_amount, tax_amount])
+
+				# Add tax to treasury
+				DiscoveryManager.add_tax_to_treasury(element, tax_amount)
+
+			# Track creation
+			DiscoveryManager.track_collection(element, final_amount, "reaction")
+
+		final_products[element] = final_amount
+
+	# Add products to inventory (with tax applied)
+	InventoryManager.add_elements(final_products)
 
 	return {
 		"success": true,

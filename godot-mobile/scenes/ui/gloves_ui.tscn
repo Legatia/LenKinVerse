@@ -148,6 +148,68 @@ layout_mode = 2
 layout_mode = 2
 text = "[ RECHARGE ] (80 raw lkC → +10 ⚡)"
 
+[node name="Multiply" type="VBoxContainer" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InfoLabel" type="Label" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+text = "Multiply Unregistered Elements
+Uses lkC catalyst (2x charge cost)"
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+
+[node name="ElementLabel" type="Label" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+text = "Select Unregistered Element:"
+
+[node name="ElementSelector" type="OptionButton" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+
+[node name="AmountLabel" type="Label" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+text = "Amount to Multiply:"
+
+[node name="AmountSpinBox" type="SpinBox" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+min_value = 1.0
+max_value = 100.0
+value = 1.0
+
+[node name="HSeparator3" type="HSeparator" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+
+[node name="RecipeLabel" type="Label" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+text = "Recipe (per unit):
+  • 1 unregistered element
+  • 5 lkC catalyst
+  → 2 unregistered elements"
+
+[node name="HSeparator4" type="HSeparator" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+
+[node name="CostLabel" type="Label" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+text = "Total Cost: 0 lkC, 0 ⚡"
+
+[node name="ResultLabel" type="Label" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+text = "Result: 0 → 0 elements"
+
+[node name="HSeparator5" type="HSeparator" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+
+[node name="MultiplyButton" type="Button" parent="Panel/TabContainer/Multiply"]
+layout_mode = 2
+text = "[ MULTIPLY ]"
+
 [node name="Reactions" type="VBoxContainer" parent="Panel/TabContainer"]
 visible = false
 layout_mode = 2
