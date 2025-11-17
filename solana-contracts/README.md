@@ -166,6 +166,55 @@ anchor deploy --provider.cluster devnet
 
 ---
 
+### `price_oracle` ⭐ NEW
+
+**Program ID:** `DdRY1fU4938imQBQSEkxLzZyZcD9hBbAJBT3YfWMqPe3`
+
+#### Instructions:
+
+1. **`initialize_oracle`**
+   - Initialize global price oracle (one-time)
+   - Sets initial LKO/SOL price
+   - **Params:**
+     - `initial_lko_per_sol`: u64
+
+2. **`update_price`**
+   - Update LKO/SOL price (backend service)
+   - Called every 60s or on 1% price change
+   - **Params:**
+     - `new_lko_per_sol`: u64
+
+3. **`update_element_price`**
+   - Update element-specific price
+   - For elements with DEX pools
+   - **Params:**
+     - `element_id`: String
+     - `price_per_sol`: u64
+
+4. **`get_price`**
+   - Get current price with staleness check
+   - Returns: u64 (LKO per SOL)
+
+5. **`set_oracle_active`**
+   - Pause/unpause oracle (emergency)
+   - **Params:**
+     - `is_active`: bool
+
+6. **`transfer_authority`**
+   - Transfer to multisig/DAO
+   - **Params:**
+     - `new_authority`: Pubkey
+
+#### Features:
+- **Authority-based:** Backend controls price updates
+- **Staleness protection:** 5-minute max age
+- **Event emission:** All updates logged on-chain
+- **Emergency pause:** Can disable in case of issues
+
+**See:** [PRICE_ORACLE.md](./PRICE_ORACLE.md) for full documentation
+
+---
+
 ### `treasury_bridge` ⭐ NEW
 
 **Program ID:** `BrdgPYm3GvXFTEHhgN2YXg5WqV9gLBYL7hdYbkBhxA1`
