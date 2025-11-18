@@ -12,8 +12,11 @@ use anchor_spl::metadata::{
 declare_id!("DFEdDQp4Ybv1LRtM6EHu8Nxwt1Bvpo6maFJFBkGj5WTQ");
 
 const REGISTRATION_FEE: u64 = 10 * 1_000_000_000; // 10 SOL
-const TAX_RATE_BPS: u64 = 1000; // 10% (basis points)
 const LOCK_PERIOD_SECONDS: i64 = 1800; // 30 minutes
+
+// Fixed initial supply for all elements (1M tokens with 6 decimals)
+// Future: Different registration fees per element (e.g., LKO=10 SOL, LKAu=100 SOL)
+const INITIAL_SUPPLY: u64 = 1_000_000 * 1_000_000; // 1M tokens
 
 #[program]
 pub mod element_token_factory {
@@ -73,12 +76,6 @@ pub mod element_token_factory {
                 REGISTRATION_FEE,
             )?;
 
-            // Create treasury token account PDA for this element
-            let (treasury_pda, _bump) = Pubkey::find_program_address(
-                &[b"element_treasury", element_id.as_bytes()],
-                ctx.program_id,
-            );
-
             // Create element data
             let element_data = ElementData {
                 element_id: element_id.clone(),
@@ -90,10 +87,6 @@ pub mod element_token_factory {
                 tradeable_at: current_time + LOCK_PERIOD_SECONDS,
                 is_tradeable: false,
                 rarity,
-                total_minted: 0,
-                treasury_balance: 0,
-                total_taxed: 0,
-                treasury_token_account: treasury_pda,
             };
 
             element_registry.elements.push(element_data);
@@ -110,6 +103,14 @@ pub mod element_token_factory {
                 uses: None,
             };
 
+            let element_mint_bump = ctx.bumps.element_mint;
+            let element_mint_seeds = &[
+                b"element_mint",
+                element_id.as_bytes(),
+                &[element_mint_bump],
+            ];
+            let signer = &[&element_mint_seeds[..]];
+
             let metadata_ctx = CpiContext::new_with_signer(
                 ctx.accounts.token_metadata_program.to_account_info(),
                 CreateMetadataAccountsV3 {
@@ -121,11 +122,7 @@ pub mod element_token_factory {
                     system_program: ctx.accounts.system_program.to_account_info(),
                     rent: ctx.accounts.rent.to_account_info(),
                 },
-                &[&[
-                    b"element_mint",
-                    element_id.as_bytes(),
-                    &[ctx.bumps.element_mint],
-                ]],
+                signer,
             );
 
             create_metadata_accounts_v3(
@@ -136,8 +133,22 @@ pub mod element_token_factory {
                 None,  // collection_details
             )?;
 
+            // Mint fixed initial supply to treasury PDA
+            token::mint_to(
+                CpiContext::new_with_signer(
+                    ctx.accounts.token_program.to_account_info(),
+                    MintTo {
+                        mint: ctx.accounts.element_mint.to_account_info(),
+                        to: ctx.accounts.treasury_token_account.to_account_info(),
+                        authority: ctx.accounts.element_mint.to_account_info(),
+                    },
+                    signer,
+                ),
+                INITIAL_SUPPLY,
+            )?;
+
             msg!(
-                "Element {} registered by {:?} (fee: {} SOL)",
+                "Element {} registered by {:?} (fee: {} SOL, initial supply: 1M tokens)",
                 element_id,
                 ctx.accounts.governor.key(),
                 REGISTRATION_FEE / 1_000_000_000
@@ -147,94 +158,9 @@ pub mod element_token_factory {
         Ok(())
     }
 
-    /// Mint element tokens with 10% tax to governor treasury
-    /// During lock period: 2x yield - 10% tax
-    /// After tradeable: 1x yield - 10% tax
-    pub fn mint_element_tokens(
-        ctx: Context<MintElementTokens>,
-        element_id: String,
-        raw_amount: u64, // Amount before tax/compensation
-    ) -> Result<()> {
-        let element_registry = &mut ctx.accounts.element_registry;
-
-        // Find element
-        let element = element_registry
-            .elements
-            .iter_mut()
-            .find(|e| e.element_id == element_id)
-            .ok_or(ErrorCode::ElementNotFound)?;
-
-        // Calculate tax (10%)
-        let tax_amount = raw_amount
-            .checked_mul(TAX_RATE_BPS)
-            .unwrap()
-            .checked_div(10000)
-            .unwrap();
-
-        // Calculate player amount based on tradeable status
-        let player_amount = if element.is_tradeable {
-            // After lock: 1x yield - 10% tax
-            raw_amount.checked_sub(tax_amount).unwrap()
-        } else {
-            // During lock: 2x yield - 10% tax
-            raw_amount
-                .checked_mul(2)
-                .unwrap()
-                .checked_sub(tax_amount)
-                .unwrap()
-        };
-
-        // Update total minted
-        element.total_minted = element.total_minted.checked_add(player_amount).unwrap();
-        element.total_taxed = element.total_taxed.checked_add(tax_amount).unwrap();
-        element.treasury_balance = element.treasury_balance.checked_add(tax_amount).unwrap();
-
-        // Mint tokens to player
-        let mint_seeds = &[
-            b"element_mint",
-            element_id.as_bytes(),
-            &[ctx.bumps.element_mint],
-        ];
-        let signer = &[&mint_seeds[..]];
-
-        token::mint_to(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                MintTo {
-                    mint: ctx.accounts.element_mint.to_account_info(),
-                    to: ctx.accounts.player_token_account.to_account_info(),
-                    authority: ctx.accounts.element_mint.to_account_info(),
-                },
-                signer,
-            ),
-            player_amount,
-        )?;
-
-        // Mint tax to governor treasury
-        token::mint_to(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                MintTo {
-                    mint: ctx.accounts.element_mint.to_account_info(),
-                    to: ctx.accounts.treasury_token_account.to_account_info(),
-                    authority: ctx.accounts.element_mint.to_account_info(),
-                },
-                signer,
-            ),
-            tax_amount,
-        )?;
-
-        msg!(
-            "Minted {} tokens: {} to player, {} to treasury ({}% tax, {} status)",
-            raw_amount,
-            player_amount,
-            tax_amount,
-            TAX_RATE_BPS / 100,
-            if element.is_tradeable { "tradeable" } else { "locked 2x" }
-        );
-
-        Ok(())
-    }
+    // REMOVED: mint_element_tokens
+    // Reason: In-game elements are game data, not minted per discovery
+    // Minting happens only when governor bridges via treasury_bridge program
 
     /// Mark element as tradeable after 30-minute lock period
     /// Anyone can call this once the lock period expires
@@ -308,6 +234,26 @@ pub struct RegisterElement<'info> {
     )]
     pub element_mint: Account<'info, Mint>,
 
+    #[account(
+        init,
+        payer = governor,
+        token::mint = element_mint,
+        token::authority = treasury_token_account,
+        seeds = [b"element_treasury", element_id.as_bytes()],
+        bump
+    )]
+    pub treasury_token_account: Account<'info, TokenAccount>,
+
+    #[account(
+        init,
+        payer = governor,
+        token::mint = element_mint,
+        token::authority = governor_revenue_account,
+        seeds = [b"governor_revenue", element_id.as_bytes()],
+        bump
+    )]
+    pub governor_revenue_account: Account<'info, TokenAccount>,
+
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub metadata: UncheckedAccount<'info>,
@@ -329,49 +275,8 @@ pub struct RegisterElement<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 
-#[derive(Accounts)]
-#[instruction(element_id: String)]
-pub struct MintElementTokens<'info> {
-    #[account(
-        mut,
-        seeds = [b"element_registry"],
-        bump
-    )]
-    pub element_registry: Account<'info, ElementRegistry>,
-
-    #[account(
-        mut,
-        seeds = [b"element_mint", element_id.as_bytes()],
-        bump
-    )]
-    pub element_mint: Account<'info, Mint>,
-
-    #[account(
-        init_if_needed,
-        payer = player,
-        associated_token::mint = element_mint,
-        associated_token::authority = player
-    )]
-    pub player_token_account: Account<'info, TokenAccount>,
-
-    /// Treasury token account for this element (receives 10% tax)
-    #[account(
-        init_if_needed,
-        payer = player,
-        seeds = [b"element_treasury", element_id.as_bytes()],
-        bump,
-        token::mint = element_mint,
-        token::authority = treasury_token_account, // Self-owned
-    )]
-    pub treasury_token_account: Account<'info, TokenAccount>,
-
-    #[account(mut)]
-    pub player: Signer<'info>,
-
-    pub token_program: Program<'info, Token>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
-    pub system_program: Program<'info, System>,
-}
+// REMOVED: MintElementTokens account struct
+// Not needed since minting happens only via bridge, not per discovery
 
 #[derive(Accounts)]
 #[instruction(element_id: String)]
@@ -414,10 +319,8 @@ pub struct ElementData {
     pub tradeable_at: i64,
     pub is_tradeable: bool,
     pub rarity: u8,
-    pub total_minted: u64,
-    pub treasury_balance: u64,  // Tax collected
-    pub total_taxed: u64,       // Cumulative tax
-    pub treasury_token_account: Pubkey, // PDA for tax tokens
+    // Note: total_minted tracked via treasury_bridge when governor bridges
+    // Note: Tax collected in-game (not on-chain)
 }
 
 #[error_code]

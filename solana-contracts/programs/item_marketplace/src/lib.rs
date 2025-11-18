@@ -3,10 +3,9 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::metadata::{
     Metadata as Metaplex,
-    MetadataAccount,
     create_metadata_accounts_v3,
     CreateMetadataAccountsV3,
-    mpl_token_metadata::types::DataV2,
+    mpl_token_metadata::types::{DataV2, Creator},
 };
 
 declare_id!("F7TehQFrx3XkuMsLPcmKLz44UxTWWfyodNLSungdqoRX");
@@ -21,10 +20,12 @@ pub mod item_marketplace {
         ctx: Context<MintItemNFT>,
         item_type: String,
         item_level: u8,
-        item_attributes: String, // JSON encoded attributes
+        item_id: String,          // Pre-formatted: "ItemType_Level"
+        item_attributes: String,  // JSON encoded attributes
         uri: String,
     ) -> Result<()> {
         require!(item_type.len() <= 32, ErrorCode::ItemTypeTooLong);
+        require!(item_id.len() <= 64, ErrorCode::ItemIdTooLong);
         require!(item_attributes.len() <= 200, ErrorCode::AttributesTooLong);
 
         // Mint NFT (supply = 1)
@@ -33,11 +34,10 @@ pub mod item_marketplace {
             to: ctx.accounts.owner_token_account.to_account_info(),
             authority: ctx.accounts.item_mint.to_account_info(),
         };
-
-        let item_id = format!("{}_{}", item_type, item_level);
+        let owner_key = ctx.accounts.owner.key();
         let seeds = &[
             b"item_mint",
-            ctx.accounts.owner.key().as_ref(),
+            owner_key.as_ref(),
             item_id.as_bytes(),
             &[ctx.bumps.item_mint],
         ];
@@ -54,7 +54,7 @@ pub mod item_marketplace {
             symbol: "LKVITEM".to_string(),
             uri,
             seller_fee_basis_points: 500, // 5% royalty
-            creators: Some(vec![mpl_token_metadata::types::Creator {
+            creators: Some(vec![Creator {
                 address: ctx.accounts.owner.key(),
                 verified: false,
                 share: 100,
@@ -125,15 +125,16 @@ pub mod item_marketplace {
     pub fn buy_item(
         ctx: Context<BuyItem>,
     ) -> Result<()> {
-        let listing = &mut ctx.accounts.listing;
+        require!(ctx.accounts.listing.is_active, ErrorCode::ListingNotActive);
 
-        require!(listing.is_active, ErrorCode::ListingNotActive);
+        let listing_price = ctx.accounts.listing.price;
+        let listing_seller = ctx.accounts.listing.seller;
 
         // Transfer SOL from buyer to seller
         let ix = anchor_lang::solana_program::system_instruction::transfer(
             &ctx.accounts.buyer.key(),
-            &listing.seller,
-            listing.price,
+            &listing_seller,
+            listing_price,
         );
 
         anchor_lang::solana_program::program::invoke(
@@ -146,11 +147,12 @@ pub mod item_marketplace {
 
         // Transfer NFT from escrow to buyer
         let item_mint_key = ctx.accounts.item_mint.key();
+        let bump = ctx.bumps.listing;
         let seeds = &[
             b"listing",
-            listing.seller.as_ref(),
+            listing_seller.as_ref(),
             item_mint_key.as_ref(),
-            &[ctx.bumps.listing],
+            &[bump],
         ];
         let signer = &[&seeds[..]];
 
@@ -166,12 +168,12 @@ pub mod item_marketplace {
         token::transfer(cpi_ctx, 1)?;
 
         // Mark listing as inactive
-        listing.is_active = false;
+        ctx.accounts.listing.is_active = false;
 
         msg!("Item {:?} sold to {:?} for {} lamports",
             ctx.accounts.item_mint.key(),
             ctx.accounts.buyer.key(),
-            listing.price
+            listing_price
         );
 
         Ok(())
@@ -181,18 +183,19 @@ pub mod item_marketplace {
     pub fn cancel_listing(
         ctx: Context<CancelListing>,
     ) -> Result<()> {
-        let listing = &mut ctx.accounts.listing;
-
-        require!(listing.is_active, ErrorCode::ListingNotActive);
-        require!(listing.seller == ctx.accounts.seller.key(), ErrorCode::NotListingSeller);
+        require!(ctx.accounts.listing.is_active, ErrorCode::ListingNotActive);
+        require!(ctx.accounts.listing.seller == ctx.accounts.seller.key(), ErrorCode::NotListingSeller);
 
         // Transfer NFT back to seller
         let item_mint_key = ctx.accounts.item_mint.key();
+        let seller_key = ctx.accounts.listing.seller;
+        let bump = ctx.bumps.listing;
+
         let seeds = &[
             b"listing",
-            listing.seller.as_ref(),
+            seller_key.as_ref(),
             item_mint_key.as_ref(),
-            &[ctx.bumps.listing],
+            &[bump],
         ];
         let signer = &[&seeds[..]];
 
@@ -208,7 +211,7 @@ pub mod item_marketplace {
         token::transfer(cpi_ctx, 1)?;
 
         // Mark listing as inactive
-        listing.is_active = false;
+        ctx.accounts.listing.is_active = false;
 
         msg!("Listing cancelled for item {:?}", ctx.accounts.item_mint.key());
 
@@ -217,7 +220,7 @@ pub mod item_marketplace {
 }
 
 #[derive(Accounts)]
-#[instruction(item_type: String, item_level: u8)]
+#[instruction(item_type: String, item_level: u8, item_id: String)]
 pub struct MintItemNFT<'info> {
     #[account(
         init,
@@ -227,7 +230,7 @@ pub struct MintItemNFT<'info> {
         seeds = [
             b"item_mint",
             owner.key().as_ref(),
-            format!("{}_{}", item_type, item_level).as_bytes()
+            item_id.as_bytes()
         ],
         bump
     )]
@@ -376,6 +379,8 @@ pub struct Listing {
 pub enum ErrorCode {
     #[msg("Item type too long (max 32 characters)")]
     ItemTypeTooLong,
+    #[msg("Item ID too long (max 64 characters)")]
+    ItemIdTooLong,
     #[msg("Attributes too long (max 200 characters)")]
     AttributesTooLong,
     #[msg("Invalid price (must be > 0)")]
