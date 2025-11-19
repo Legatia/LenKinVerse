@@ -49,6 +49,15 @@ func get_ui_icon(ui_id: String) -> Variant:
 	return _get_asset(["ui", ui_id, "icon"],
 		asset_config.get("ui", {}).get(ui_id, {}).get("fallback_emoji", "❓"))
 
+## Get player sprite texture
+func get_player_sprite() -> Texture2D:
+	var player_path = "res://assets/ui/player.JPG"
+	if ResourceLoader.exists(player_path):
+		return load(player_path)
+	else:
+		push_warning("Player sprite not found at: %s" % player_path)
+		return null
+
 ## Get element icon with fallback to emoji
 func get_element_icon(element_id: String, rarity: int = -1) -> Variant:
 	# Try rarity-specific icon first
@@ -171,6 +180,10 @@ func get_element_emoji(element_id: String) -> String:
 ## Get fallback emoji for UI element
 func get_ui_emoji(ui_id: String) -> String:
 	return asset_config.get("ui", {}).get(ui_id, {}).get("fallback_emoji", "❓")
+
+## Alias for consistency with get_ui_emoji
+func get_ui_fallback(ui_id: String) -> String:
+	return get_ui_emoji(ui_id)
 
 ## Check if asset exists
 func has_asset(category: String, asset_id: String, property: String = "icon") -> bool:

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Health Connect permissions for Android 14+ -->
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
+
+    <!-- Optional: Request specific Health Connect app -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
+    <application>
+        <!-- Health Connect metadata -->
+        <meta-data
+            android:name="health_permissions"
+            android:resource="@array/health_permissions" />
+    </application>
+</manifest>

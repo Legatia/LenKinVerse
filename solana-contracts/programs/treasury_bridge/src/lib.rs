@@ -246,17 +246,11 @@ pub struct BridgeToChain<'info> {
 
     pub element_mint: Account<'info, Mint>,
 
+    /// Bridge record (caller must provide unique account)
     #[account(
         init,
         payer = governor,
-        space = 8 + BridgeRecord::INIT_SPACE,
-        seeds = [
-            b"bridge_record",
-            element_id.as_bytes(),
-            governor.key().as_ref(),
-            &Clock::get()?.unix_timestamp.to_le_bytes()
-        ],
-        bump
+        space = 8 + BridgeRecord::INIT_SPACE
     )]
     pub bridge_record: Account<'info, BridgeRecord>,
 
@@ -283,17 +277,11 @@ pub struct BridgeToIngame<'info> {
     #[account(mut)]
     pub element_mint: Account<'info, Mint>,
 
+    /// Bridge record (caller must provide unique account)
     #[account(
         init,
         payer = governor,
-        space = 8 + BridgeRecord::INIT_SPACE,
-        seeds = [
-            b"bridge_record",
-            element_id.as_bytes(),
-            governor.key().as_ref(),
-            &Clock::get()?.unix_timestamp.to_le_bytes()
-        ],
-        bump
+        space = 8 + BridgeRecord::INIT_SPACE
     )]
     pub bridge_record: Account<'info, BridgeRecord>,
 
@@ -339,17 +327,11 @@ pub struct PlayerBridgeToChain<'info> {
 
     pub element_mint: Account<'info, Mint>,
 
+    /// Bridge record (caller must provide unique account)
     #[account(
         init,
         payer = player,
-        space = 8 + BridgeRecord::INIT_SPACE,
-        seeds = [
-            b"bridge_record",
-            element_id.as_bytes(),
-            player.key().as_ref(),
-            &Clock::get()?.unix_timestamp.to_le_bytes()
-        ],
-        bump
+        space = 8 + BridgeRecord::INIT_SPACE
     )]
     pub bridge_record: Account<'info, BridgeRecord>,
 

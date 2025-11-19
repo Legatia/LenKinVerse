@@ -3,6 +3,9 @@ extends Control
 
 @onready var wallet_label: Label = $Panel/VBoxContainer/WalletSection/WalletLabel
 @onready var world_label: Label = $Panel/VBoxContainer/WalletSection/WorldLabel
+@onready var sol_balance_label: Label = $Panel/VBoxContainer/WalletSection/SOLBalanceLabel
+@onready var alsol_balance_label: Label = $Panel/VBoxContainer/WalletSection/alSOLBalanceLabel
+
 @onready var gloves_level_label: Label = $Panel/VBoxContainer/GlovesSection/LevelLabel
 @onready var gloves_progress_bar: ProgressBar = $Panel/VBoxContainer/GlovesSection/ProgressBar
 @onready var gloves_progress_label: Label = $Panel/VBoxContainer/GlovesSection/ProgressBar/Label
@@ -15,6 +18,9 @@ extends Control
 func _ready() -> void:
 	refresh_stats()
 
+	# Connect to wallet balance updates
+	WalletManager.balance_updated.connect(_on_balance_updated)
+
 func refresh_stats() -> void:
 	# Wallet info
 	var wallet_address = WalletManager.wallet_address
@@ -23,6 +29,14 @@ func refresh_stats() -> void:
 		wallet_label.text = "👻 " + shortened
 	else:
 		wallet_label.text = "👻 Not Connected"
+
+	# Balances
+	if WalletManager.is_connected:
+		sol_balance_label.text = "💎 SOL: %.3f" % WalletManager.sol_balance
+		alsol_balance_label.text = "⚡ alSOL: %.3f" % WalletManager.alsol_balance
+	else:
+		sol_balance_label.text = "💎 SOL: ---"
+		alsol_balance_label.text = "⚡ alSOL: ---"
 
 	# World info
 	var world_data = WorldManager.get_current_world()
@@ -97,6 +111,11 @@ func format_number(num: int) -> String:
 		counter += 1
 
 	return result
+
+## Called when wallet balance is updated
+func _on_balance_updated(sol: float, alsol: float) -> void:
+	sol_balance_label.text = "💎 SOL: %.3f" % sol
+	alsol_balance_label.text = "⚡ alSOL: %.3f" % alsol
 
 func _on_close_button_pressed() -> void:
 	queue_free()

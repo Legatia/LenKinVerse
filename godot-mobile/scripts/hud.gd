@@ -8,6 +8,10 @@ extends CanvasLayer
 @onready var gloves_button: Button = $GlovesButton
 
 func _ready() -> void:
+	# Load button icons from asset_config.json
+	_setup_gloves_button_icon()
+	_setup_profile_button_icon()
+
 	# Connect buttons
 	profile_button.pressed.connect(_on_profile_button_pressed)
 	gloves_button.pressed.connect(_on_gloves_button_pressed)
@@ -18,6 +22,62 @@ func _ready() -> void:
 	# Connect to inventory changes
 	if InventoryManager.has_signal("inventory_changed"):
 		InventoryManager.inventory_changed.connect(update_stats)
+
+func _setup_gloves_button_icon() -> void:
+	"""Programmatically load and apply gloves icon from asset_config.json"""
+	var icon_texture = AssetManager.get_ui_icon("gloves_button")
+
+	if icon_texture is Texture2D:
+		# Create an ImageTexture to resize the icon
+		var image = icon_texture.get_image()
+		# Resize to match corner button size (30x30)
+		image.resize(30, 30, Image.INTERPOLATE_LANCZOS)
+		var resized_texture = ImageTexture.create_from_image(image)
+
+		# Set the icon for the button
+		gloves_button.icon = resized_texture
+		# Clear any text that might be showing emoji
+		gloves_button.text = ""
+		# Set icon alignment
+		gloves_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		# Disable expand to prevent stretching
+		gloves_button.expand_icon = false
+		print("HUD: Loaded gloves icon from asset_config.json (resized to 30x30)")
+	else:
+		# Fallback: Use emoji if icon loading fails
+		var fallback = AssetManager.get_ui_fallback("gloves_button")
+		gloves_button.text = fallback
+		# Reduce font size to match button better
+		gloves_button.add_theme_font_size_override("font_size", 24)
+		print("HUD: Using fallback emoji for gloves button")
+
+func _setup_profile_button_icon() -> void:
+	"""Programmatically load and apply profile icon from asset_config.json"""
+	var icon_texture = AssetManager.get_ui_icon("profile_button")
+
+	if icon_texture is Texture2D:
+		# Create an ImageTexture to resize the icon
+		var image = icon_texture.get_image()
+		# Resize to match top bar button size (24x24 for smaller top buttons)
+		image.resize(24, 24, Image.INTERPOLATE_LANCZOS)
+		var resized_texture = ImageTexture.create_from_image(image)
+
+		# Set the icon for the button
+		profile_button.icon = resized_texture
+		# Clear any text that might be showing emoji
+		profile_button.text = ""
+		# Set icon alignment
+		profile_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		# Disable expand to prevent stretching
+		profile_button.expand_icon = false
+		print("HUD: Loaded profile icon from asset_config.json (resized to 24x24)")
+	else:
+		# Fallback: Use emoji if icon loading fails
+		var fallback = AssetManager.get_ui_fallback("profile_button")
+		profile_button.text = fallback
+		# Reduce font size to match button better
+		profile_button.add_theme_font_size_override("font_size", 20)
+		print("HUD: Using fallback emoji for profile button")
 
 func _process(_delta: float) -> void:
 	# Update stats every frame for real-time display

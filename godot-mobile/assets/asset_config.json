@@ -5,14 +5,14 @@
 
 	"furniture": {
 		"storage_box": {
-			"icon": "res://assets/furniture/storage_box.svg",
-			"sprite": "res://assets/furniture/storage_box_large.svg",
+			"icon": "res://assets/ui/storage.PNG",
+			"sprite": "res://assets/ui/storage.PNG",
 			"fallback_emoji": "📦",
 			"size": [80, 80]
 		},
 		"marketplace": {
-			"icon": "res://assets/furniture/marketplace.svg",
-			"sprite": "res://assets/furniture/marketplace_large.svg",
+			"icon": "res://assets/ui/marketplace.PNG",
+			"sprite": "res://assets/ui/marketplace.PNG",
 			"fallback_emoji": "🖥️",
 			"size": [80, 80]
 		}
@@ -20,24 +20,24 @@
 
 	"ui": {
 		"gloves_button": {
-			"icon": "res://assets/ui/gloves_icon.svg",
+			"icon": "res://assets/ui/gloves_icon.PNG",
 			"fallback_emoji": "⚗️",
-			"size": [60, 60]
+			"size": [30, 30]
 		},
 		"profile_button": {
-			"icon": "res://assets/ui/profile_icon.svg",
+			"icon": "res://assets/ui/player.JPG",
 			"fallback_emoji": "📊",
-			"size": [40, 40]
+			"size": [24, 24]
 		},
 		"storage_button": {
-			"icon": "res://assets/ui/storage_icon.svg",
+			"icon": "res://assets/ui/storage.PNG",
 			"fallback_emoji": "📦",
-			"size": [40, 40]
+			"size": [30, 30]
 		},
 		"marketplace_button": {
-			"icon": "res://assets/ui/marketplace_icon.svg",
+			"icon": "res://assets/ui/marketplace.PNG",
 			"fallback_emoji": "🏪",
-			"size": [40, 40]
+			"size": [30, 30]
 		}
 	},
 

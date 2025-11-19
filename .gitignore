@@ -6,6 +6,8 @@ export_presets.cfg
 *.translation
 
 # Godot builds
+godot-mobile/builds/
+godot-mobile/exports/
 *.exe
 *.pck
 *.zip
@@ -34,6 +36,13 @@ user://
 *~.nib
 .directory
 
+# Godot plugin builds
+godot-mobile/plugins/android/**/build/
+godot-mobile/plugins/android/**/.gradle/
+godot-mobile/plugins/android/**/*.aar
+godot-mobile/plugins/ios/**/*.xcframework
+godot-mobile/plugins/ios/**/DerivedData/
+
 # Solana/Anchor
 solana-contracts/.anchor
 solana-contracts/target/
@@ -56,6 +65,12 @@ package-lock.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Backend specific
+backend/uploads/
+backend/.env
+backend/dist/
+backend/coverage/
 
 # IDEs and Editors
 .vscode/
@@ -109,3 +124,37 @@ docs/.doctrees/
 # Git
 *.orig
 *.rej
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# iOS/Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Android
+*.iml
+.gradle
+local.properties
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/gradle.xml
+.idea/misc.xml
+*.hprof
+
+# Health plugin specific
+godot-mobile/plugins/ios/healthkit/libs/
+godot-mobile/plugins/android/healthconnect/libs/godot-lib.*.aar

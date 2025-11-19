@@ -271,43 +271,94 @@ func _on_metadata_uploaded(metadata_uri: String) -> void:
 func _on_metadata_upload_failed(error: String) -> void:
 	transaction_failed.emit("Metadata upload failed: %s" % error)
 
-## Swap SOL for alSOL
+## Swap SOL for alSOL (via backend API)
 func swap_sol_for_alsol(sol_amount: float) -> void:
 	if not is_connected:
 		transaction_failed.emit("Wallet not connected")
 		return
 
-	var lamports = int(sol_amount * 1_000_000_000)
+	print("🔄 Swapping %.3f SOL for alSOL via backend..." % sol_amount)
 
-	var instruction = anchor_helper.build_swap_sol_for_alsol(
-		wallet_address,
-		lamports,
-		"alSOL_mint_address",  # TODO: Replace with actual
-		"marketplace_authority"  # TODO: Replace with actual
+	# Call backend API to buy alSOL with SOL
+	var backend_url = _get_backend_url()
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	var body = JSON.stringify({
+		"player_id": wallet_address,
+		"payment_type": "sol",
+		"amount": sol_amount,
+		"transaction_signature": ""  # TODO: Get actual SOL transfer signature
+	})
+
+	var headers = ["Content-Type: application/json"]
+	http.request_completed.connect(func(result, response_code, headers_r, body_r):
+		http.queue_free()
+
+		if response_code == 200:
+			var json = JSON.new()
+			var parse_result = json.parse(body_r.get_string_from_utf8())
+			if parse_result == OK:
+				var data = json.data
+				alsol_balance = data.get("new_balance", 0.0)
+				balance_updated.emit(sol_balance, alsol_balance)
+				transaction_completed.emit("SOL_SWAP_" + str(Time.get_unix_time_from_system()))
+				print("✅ alSOL swap successful: %.3f alSOL" % alsol_balance)
+			else:
+				transaction_failed.emit("Failed to parse response")
+		else:
+			transaction_failed.emit("Backend API error: %d" % response_code)
 	)
 
-	solana_rpc.get_recent_blockhash()
-	# Will build and send transaction in _on_rpc_response
+	http.request(backend_url + "/api/buy-alsol", headers, HTTPClient.METHOD_POST, body)
 
-## Swap LKC for alSOL
+## Swap LKC for alSOL (via backend API)
 func swap_lkc_for_alsol(lkc_amount: int) -> void:
 	if not is_connected:
 		transaction_failed.emit("Wallet not connected")
 		return
 
-	var swap_history_pda = anchor_helper.derive_swap_history_pda(wallet_address)
+	print("🔄 Swapping %d LKC for alSOL via backend..." % lkc_amount)
 
-	var instruction = anchor_helper.build_swap_lkc_for_alsol(
-		wallet_address,
-		lkc_amount,
-		"LKC_mint_address",  # TODO: Replace with actual
-		"alSOL_mint_address",  # TODO: Replace with actual
-		swap_history_pda,
-		"marketplace_authority"  # TODO: Replace with actual
+	# Call backend API to buy alSOL with LKC
+	var backend_url = _get_backend_url()
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	var body = JSON.stringify({
+		"player_id": wallet_address,
+		"payment_type": "lkc",
+		"amount": lkc_amount
+	})
+
+	var headers = ["Content-Type: application/json"]
+	http.request_completed.connect(func(result, response_code, headers_r, body_r):
+		http.queue_free()
+
+		if response_code == 200:
+			var json = JSON.new()
+			var parse_result = json.parse(body_r.get_string_from_utf8())
+			if parse_result == OK:
+				var data = json.data
+				alsol_balance = data.get("new_balance", 0.0)
+				balance_updated.emit(sol_balance, alsol_balance)
+				transaction_completed.emit("LKC_SWAP_" + str(Time.get_unix_time_from_system()))
+				print("✅ LKC → alSOL swap successful: %.3f alSOL (%.1f%% weekly limit used)" % [
+					alsol_balance,
+					(1.0 - data.get("weekly_limit_remaining", 0.0)) * 100.0
+				])
+			else:
+				transaction_failed.emit("Failed to parse response")
+		else:
+			var error_msg = "Backend API error: %d" % response_code
+			if response_code == 400:
+				var json = JSON.new()
+				if json.parse(body_r.get_string_from_utf8()) == OK:
+					error_msg = json.data.get("error", error_msg)
+			transaction_failed.emit(error_msg)
 	)
 
-	solana_rpc.get_recent_blockhash()
-	# Will build and send transaction in _on_rpc_response
+	http.request(backend_url + "/api/buy-alsol", headers, HTTPClient.METHOD_POST, body)
 
 ## Create marketplace listing
 func create_marketplace_listing(element_nft_mint: String, price_sol: float) -> void:
@@ -382,6 +433,19 @@ func _on_rpc_response(result: Variant) -> void:
 func _on_rpc_error(error: String) -> void:
 	push_error("RPC error: %s" % error)
 	transaction_failed.emit("RPC error: %s" % error)
+
+## Get backend API URL from environment/config
+func _get_backend_url() -> String:
+	# Try to get from environment variable or config
+	# For development, use localhost:3000
+	# For production, use deployed backend URL
+	if OS.has_environment("LENKINVERSE_BACKEND_URL"):
+		return OS.get_environment("LENKINVERSE_BACKEND_URL")
+	elif OS.has_feature("debug"):
+		return "http://localhost:3000"
+	else:
+		# Production backend URL (update after deployment)
+		return "https://lenkinverse-api.railway.app"
 
 # ============================================
 # Helpers

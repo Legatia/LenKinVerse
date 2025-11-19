@@ -94,7 +94,87 @@ func add_sellable_item(element: String, amount: int) -> void:
 
 func _start_selling(element: String, max_amount: int) -> void:
 	print("Starting sell flow for: ", element, " (max: ", max_amount, ")")
-	# TODO: Show sell dialog with amount/price inputs
+
+	if not WalletManager.is_connected:
+		show_message("❌ Please connect wallet first to list items!")
+		return
+
+	# Show dialog to get listing price
+	var price_input = AcceptDialog.new()
+	price_input.title = "List %s for Sale" % element
+	price_input.dialog_text = "Enter price in alSOL (you have %d %s):" % [max_amount, element]
+
+	var vbox = VBoxContainer.new()
+	var price_edit = LineEdit.new()
+	price_edit.placeholder_text = "e.g., 0.5"
+	price_edit.expand_to_text_length = true
+	vbox.add_child(price_edit)
+
+	var amount_edit = LineEdit.new()
+	amount_edit.placeholder_text = "Amount to list (max: %d)" % max_amount
+	amount_edit.text = str(max_amount)
+	vbox.add_child(amount_edit)
+
+	price_input.add_child(vbox)
+	add_child(price_input)
+
+	price_input.confirmed.connect(func():
+		var price = price_edit.text.to_float()
+		var amount = amount_edit.text.to_int()
+
+		if price <= 0 or amount <= 0 or amount > max_amount:
+			show_message("❌ Invalid price or amount")
+			return
+
+		_create_listing(element, amount, price)
+		price_input.queue_free()
+	)
+
+	price_input.canceled.connect(func():
+		price_input.queue_free()
+	)
+
+	price_input.popup_centered()
+
+func _create_listing(element: String, amount: int, price_alsol: float) -> void:
+	show_message("📋 Creating marketplace listing for %d %s @ %.3f alSOL..." % [amount, element, price_alsol])
+
+	# First, we need to mint the elements as an NFT
+	var element_data = {
+		"element_id": element,
+		"element_name": _get_element_full_name(element),
+		"symbol": element,
+		"rarity": _get_element_rarity(element),
+		"amount": amount,
+		"generation_method": _get_generation_method(element),
+		"discovered_at": Time.get_unix_time_from_system()
+	}
+
+	var on_mint_success: Callable
+	var on_mint_failure: Callable
+
+	on_mint_success = func(nft_mint: String):
+		show_message("✅ NFT minted! Now creating listing...")
+
+		# Consume elements from inventory since they're now in NFT
+		InventoryManager.consume_elements({element: amount})
+
+		# Create marketplace listing
+		WalletManager.create_marketplace_listing(nft_mint, price_alsol)
+
+		WalletManager.transaction_completed.disconnect(on_mint_success)
+		WalletManager.transaction_failed.disconnect(on_mint_failure)
+
+	on_mint_failure = func(error: String):
+		show_message("❌ Failed to mint NFT: %s" % error)
+		WalletManager.transaction_completed.disconnect(on_mint_success)
+		WalletManager.transaction_failed.disconnect(on_mint_failure)
+
+	WalletManager.transaction_completed.connect(on_mint_success)
+	WalletManager.transaction_failed.connect(on_mint_failure)
+
+	# Start minting process
+	WalletManager.mint_element_nft(element_data)
 
 func populate_mintable_items() -> void:
 	# Clear existing
