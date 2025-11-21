@@ -158,3 +158,18 @@ local.properties
 # Health plugin specific
 godot-mobile/plugins/ios/healthkit/libs/
 godot-mobile/plugins/android/healthconnect/libs/godot-lib.*.aar
+
+# Database
+*.sql.backup
+*.db.backup
+waitlist.csv
+*.dump
+
+# Landing page
+landing-page/node_modules/
+landing-page/.cache/
+landing-page/dist/
+
+# Old branding artifacts (optional - can remove these lines later)
+# Keep track of old database in case rollback is needed
+# lenkinverse database exports can be kept as backups

@@ -4,10 +4,14 @@
  * All database operations for player inventories, wild spawns, etc.
  */
 
+import dotenv from 'dotenv';
 import { Pool } from 'pg';
 import { logger } from '../utils/logger';
 
-const pool = new Pool({
+// Load environment variables early
+dotenv.config();
+
+export const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
   database: process.env.DB_NAME || 'lenkinverse',

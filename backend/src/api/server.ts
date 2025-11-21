@@ -14,12 +14,16 @@ import {
   debitPlayerAlSOL,
 } from '../db/queries';
 import { logger } from '../utils/logger';
+import waitlistRouter from '../routes/waitlist';
 
 const app = express();
 
 // Middleware
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
+
+// Waitlist route
+app.use('/api/waitlist', waitlistRouter);
 
 // Request logging
 app.use((req, res, next) => {

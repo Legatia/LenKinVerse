@@ -1,4 +1,4 @@
-# 🎮 LenKinVerse
+# 🧪 ReAgenyx
 
 **Walk-to-Earn Web3 Mobile Game | Chemistry + NFTs + Real Movement**
 
@@ -6,11 +6,13 @@
 
 [![iOS](https://img.shields.io/badge/iOS-15%2B-blue)](godot-mobile/) [![Android](https://img.shields.io/badge/Android-14%2B-green)](godot-mobile/) [![Solana](https://img.shields.io/badge/Solana-Devnet-purple)](solana-contracts/)
 
+![ReAgenyx Logo](landing-page/assets/Subject.png)
+
 ---
 
-## 🌟 What is LenKinVerse?
+## 🌟 What is ReAgenyx?
 
-LenKinVerse is a **move-to-earn mobile game** where your real-world movement rewards you with in-game materials that become NFTs on the blockchain. Walk, collect elements, perform chemistry reactions, and trade discoveries in a player-driven economy.
+ReAgenyx is a **move-to-earn mobile game** where your real-world movement rewards you with in-game materials that become NFTs on the blockchain. Walk, collect elements, perform chemistry reactions, and trade discoveries in a player-driven economy.
 
 ### Key Features:
 - 🚶‍♂️ **Movement Rewards** - Walk to collect raw materials (50m = 1 chunk)
@@ -37,8 +39,8 @@ LenKinVerse is a **move-to-earn mobile game** where your real-world movement rew
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/LenKinVerse.git
-cd LenKinVerse
+git clone https://github.com/yourusername/ReAgenyx.git
+cd ReAgenyx
 
 # Backend API (Node.js + PostgreSQL)
 cd backend
@@ -175,10 +177,15 @@ See [ELEMENTS_AND_REACTIONS.md](docs/ELEMENTS_AND_REACTIONS.md) for full details
 ## 📂 Project Structure
 
 ```
-LenKinVerse/
+ReAgenyx/
+├── landing-page/            # Marketing website + waitlist
+│   ├── index.html          # Landing page
+│   ├── css/style.css       # Responsive styles
+│   └── js/script.js        # Waitlist form
+│
 ├── backend/                 # Node.js API + PostgreSQL
 │   ├── src/
-│   │   ├── routes/         # API endpoints
+│   │   ├── routes/         # API endpoints (+ waitlist)
 │   │   ├── db/             # Database schema
 │   │   └── services/       # Business logic
 │   └── package.json
@@ -283,7 +290,7 @@ godot --path . scenes/main.tscn
 godot --headless --export-release "iOS" builds/ios/
 
 # Export Android
-godot --headless --export-release "Android" builds/android/LenKinVerse.apk
+godot --headless --export-release "Android" builds/android/ReAgenyx.apk
 ```
 
 See [Health API Setup](docs/health/HEALTH_API_SETUP.md) for native plugin configuration.
@@ -347,10 +354,10 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 
 ## 🔗 Links
 
-- **Website:** https://lenkinverse.com (coming soon)
-- **Discord:** https://discord.gg/lenkinverse
-- **Twitter:** [@LenKinVerse](https://twitter.com/lenkinverse)
-- **Docs:** https://docs.lenkinverse.com
+- **Website:** https://reagenyx.com (coming soon)
+- **Discord:** https://discord.gg/reagenyx
+- **Twitter:** [@ReAgenyx](https://twitter.com/reagenyx)
+- **Docs:** https://docs.reagenyx.com
 
 ---
 
@@ -373,7 +380,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 **Game Elements:** 10
 **Reactions:** 4 types
 
-**Built with ❤️ by the LenKinVerse team**
+**Built with ❤️ by the ReAgenyx team**
 
 ---
 

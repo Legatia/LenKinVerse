@@ -1,5 +1,5 @@
 /**
- * LenKinVerse Backend Server
+ * ReAgenyx Backend Server
  *
  * Main entry point - starts API server and event listener
  */
@@ -16,7 +16,7 @@ dotenv.config();
 
 async function main() {
   try {
-    logger.info('🚀 Starting LenKinVerse Backend...');
+    logger.info('🚀 Starting ReAgenyx Backend...');
 
     // 1. Initialize database connection
     await initializeDatabase();
@@ -43,7 +43,7 @@ async function main() {
       });
     }
 
-    logger.info('✅ LenKinVerse Backend started successfully');
+    logger.info('✅ ReAgenyx Backend started successfully');
 
     // Handle graceful shutdown
     process.on('SIGINT', async () => {
