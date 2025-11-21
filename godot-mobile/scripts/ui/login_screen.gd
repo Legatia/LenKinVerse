@@ -50,10 +50,26 @@ func request_health_permissions() -> void:
 		# Still allow playing without health data
 
 func transition_to_main_game() -> void:
-	# Check if this is first launch
+	# World should already be selected before reaching this screen
+	# Route to the correct planet based on selected world
+	var planet_scene = get_planet_scene_for_world()
+
 	if GameManager.is_first_launch:
-		# Go directly to main room
-		get_tree().change_scene_to_file("res://scenes/main.tscn")
+		# Go directly to planet room
+		get_tree().change_scene_to_file(planet_scene)
 	else:
 		# Calculate offline rewards first
 		get_tree().change_scene_to_file("res://scenes/ui/offline_rewards.tscn")
+
+func get_planet_scene_for_world() -> String:
+	match WorldManager.current_world:
+		"solana":
+			return "res://scenes/solana_planet.tscn"
+		"ethereum_base":
+			return "res://scenes/base_planet.tscn"
+		"sui":
+			return "res://scenes/sui_planet.tscn"
+		_:
+			# Default to Solana if no world selected (shouldn't happen)
+			push_warning("No world selected, defaulting to Solana")
+			return "res://scenes/solana_planet.tscn"

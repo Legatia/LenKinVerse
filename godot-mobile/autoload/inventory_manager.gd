@@ -4,15 +4,20 @@ extends Node
 signal inventory_changed()
 signal isotope_discovered(isotope_type: String)
 
-# Raw materials (unprocessed)
+# Raw materials (unprocessed) - includes raw isotopes
 var raw_materials: Dictionary = {
-	"lkC": 0
+	"lkC": 0,
+	"lkC14": 0  # Raw isotope material
 }
 
 # Elements (processed)
 var elements: Dictionary = {
 	"lkC": 0
 }
+
+# Unregistered elements (have special perks)
+var unregistered_elements: Dictionary = {}
+# Format: {"element_id": amount}
 
 # Isotopes with decay timers
 var isotopes: Array[Dictionary] = []
@@ -50,6 +55,10 @@ func add_raw_material(element: String, amount: int) -> void:
 	if not raw_materials.has(element):
 		raw_materials[element] = 0
 	raw_materials[element] += amount
+
+	# Roll for wild spawns of registered elements
+	_roll_wild_spawns(element, amount)
+
 	inventory_changed.emit()
 	save_inventory()
 
@@ -93,20 +102,73 @@ func consume_elements(elements_dict: Dictionary) -> bool:
 	save_inventory()
 	return true
 
-## Add discovered isotope
+## Add unregistered element
+func add_unregistered_element(element_id: String, amount: int) -> void:
+	if not unregistered_elements.has(element_id):
+		unregistered_elements[element_id] = 0
+	unregistered_elements[element_id] += amount
+	inventory_changed.emit()
+	save_inventory()
+	print("Added %d unregistered %s (10x isotope rate, can multiply with gloves)" % [amount, element_id])
+
+## Consume unregistered element
+func consume_unregistered_element(element_id: String, amount: int) -> bool:
+	if not unregistered_elements.has(element_id) or unregistered_elements[element_id] < amount:
+		return false
+
+	unregistered_elements[element_id] -= amount
+	if unregistered_elements[element_id] <= 0:
+		unregistered_elements.erase(element_id)
+
+	inventory_changed.emit()
+	save_inventory()
+	return true
+
+## Get unregistered element amount
+func get_unregistered_element_amount(element_id: String) -> int:
+	return unregistered_elements.get(element_id, 0)
+
+## Check if element is unregistered in inventory
+func has_unregistered_element(element_id: String) -> bool:
+	return unregistered_elements.has(element_id) and unregistered_elements[element_id] > 0
+
+## Convert unregistered element to registered (when element gets registered globally)
+func convert_unregistered_to_registered(element_id: String) -> void:
+	if unregistered_elements.has(element_id):
+		var amount = unregistered_elements[element_id]
+		unregistered_elements.erase(element_id)
+
+		# Add to regular elements
+		if not elements.has(element_id):
+			elements[element_id] = 0
+		elements[element_id] += amount
+
+		inventory_changed.emit()
+		save_inventory()
+		print("Converted %d unregistered %s to registered (perks lost)" % [amount, element_id])
+
+## Add discovered isotope as raw material
 func add_isotope(isotope_type: String) -> void:
+	# Isotopes are discovered as raw materials with volume in units
+	# Volume is random between 12-28 units
+	# Volume decays over time (halves every 6 hours) AND consumed during reactions (0.5 per reaction)
+	var volume = randi_range(12, 28)
+
+	var current_time = Time.get_unix_time_from_system()
 	var isotope = {
-		"id": "isotope_%d" % Time.get_unix_time_from_system(),
+		"id": "isotope_%d" % current_time,
 		"type": isotope_type,
-		"amount": 1,
-		"discovered_at": Time.get_unix_time_from_system(),
-		"decay_time": Time.get_unix_time_from_system() + (24 * 60 * 60)  # 24 hours
+		"volume": float(volume),  # Units of raw isotope material
+		"discovered_at": current_time,
+		"last_decay_at": current_time,  # Track last decay time
 	}
 
 	isotopes.append(isotope)
 	isotope_discovered.emit(isotope_type)
 	inventory_changed.emit()
 	save_inventory()
+
+	print("Discovered %s with %d volume units (each unit = 2 reactions, halves every 6h)" % [isotope_type, volume])
 
 ## Remove isotope (used in reaction)
 func remove_isotope(isotope_id: String) -> bool:
@@ -119,19 +181,58 @@ func remove_isotope(isotope_id: String) -> bool:
 		return true
 	return false
 
-## Check for decayed isotopes
-func _check_isotope_decay() -> void:
-	var current_time = Time.get_unix_time_from_system()
-	var removed = false
+## Consume isotope volume for reaction (0.5 units per reaction)
+func consume_isotope_volume(isotope_id: String, volume_to_consume: float) -> bool:
+	for isotope in isotopes:
+		if isotope.get("id") == isotope_id:
+			var current_volume = isotope.get("volume", 0.0)
+			if current_volume >= volume_to_consume:
+				isotope["volume"] = current_volume - volume_to_consume
 
-	isotopes = isotopes.filter(func(i):
-		if i.get("decay_time", 0) <= current_time:
-			removed = true
+				# Remove isotope if volume depleted
+				if isotope["volume"] <= 0:
+					isotopes = isotopes.filter(func(i): return i.get("id") != isotope_id)
+
+				inventory_changed.emit()
+				save_inventory()
+				return true
 			return false
-		return true
-	)
+	return false
 
-	if removed:
+## Check for time-based isotope decay (halves every 6 hours)
+func _check_isotope_decay() -> void:
+	const DECAY_INTERVAL: int = 6 * 60 * 60  # 6 hours in seconds
+	var current_time = Time.get_unix_time_from_system()
+	var changed = false
+
+	for isotope in isotopes:
+		var last_decay = isotope.get("last_decay_at", isotope.get("discovered_at", current_time))
+		var time_elapsed = current_time - last_decay
+
+		# Calculate how many 6-hour periods have passed
+		var decay_periods = int(time_elapsed / DECAY_INTERVAL)
+
+		if decay_periods > 0:
+			# Apply decay: halve volume for each period
+			var current_volume = isotope.get("volume", 0.0)
+			for i in range(decay_periods):
+				current_volume *= 0.5
+
+			isotope["volume"] = current_volume
+			isotope["last_decay_at"] = last_decay + (decay_periods * DECAY_INTERVAL)
+			changed = true
+
+			print("Isotope %s decayed: %.2f units (decayed %d times)" % [isotope.get("type"), current_volume, decay_periods])
+
+	# Remove isotopes with depleted volume (from decay or reactions)
+	var original_size = isotopes.size()
+	isotopes = isotopes.filter(func(i): return i.get("volume", 0) > 0)
+
+	if isotopes.size() < original_size:
+		changed = true
+		print("Removed %d depleted isotope(s)" % (original_size - isotopes.size()))
+
+	if changed:
 		inventory_changed.emit()
 		save_inventory()
 
@@ -152,6 +253,7 @@ func save_inventory() -> void:
 	var save_data = {
 		"raw_materials": raw_materials,
 		"elements": elements,
+		"unregistered_elements": unregistered_elements,
 		"isotopes": isotopes,
 		"items": items,
 		"raw_chunks": raw_chunks
@@ -172,9 +274,65 @@ func load_inventory() -> void:
 		var save_data = file.get_var()
 		raw_materials = save_data.get("raw_materials", {"lkC": 0})
 		elements = save_data.get("elements", {"lkC": 0})
+		unregistered_elements = save_data.get("unregistered_elements", {})
 		isotopes = save_data.get("isotopes", [])
 		items = save_data.get("items", [])
 		raw_chunks = save_data.get("raw_chunks", [])
 		file.close()
 
+		# Ensure all isotopes have last_decay_at field for legacy saves
+		var current_time = Time.get_unix_time_from_system()
+		for isotope in isotopes:
+			if not isotope.has("last_decay_at"):
+				isotope["last_decay_at"] = isotope.get("discovered_at", current_time)
+			# Ensure volume is float
+			if isotope.has("volume") and typeof(isotope["volume"]) == TYPE_INT:
+				isotope["volume"] = float(isotope["volume"])
+
 		inventory_changed.emit()
+
+## ========================================
+## WILD SPAWN SYSTEM
+## ========================================
+
+## Roll for wild spawns when collecting raw materials
+func _roll_wild_spawns(collected_element: String, amount: int) -> void:
+	"""
+	When collecting raw materials (e.g., lkC), roll for registered element spawns
+	Only applies to basic elements like lkC that are collected from walking/mining
+	"""
+	# Only roll for basic collection elements
+	if collected_element not in ["lkC", "lkO", "lkN", "lkH", "lkSi"]:
+		return
+
+	# Get all tradeable elements
+	var tradeable_elements = DiscoveryManager.get_tradeable_elements()
+	if tradeable_elements.is_empty():
+		return
+
+	# Roll for each unit collected
+	for i in range(amount):
+		# Check each tradeable element
+		for element_id in tradeable_elements:
+			var spawn_chance = DiscoveryManager.get_wild_spawn_chance(element_id)
+
+			# Roll for spawn
+			if randf() < spawn_chance:
+				# Wild spawn discovered!
+				_add_wild_spawn(element_id)
+
+## Add wild spawn to inventory
+func _add_wild_spawn(element_id: String) -> void:
+	"""Add a wild-spawned registered element (as raw material first)"""
+	# Add as raw material
+	if not raw_materials.has("raw_" + element_id):
+		raw_materials["raw_" + element_id] = 0
+	raw_materials["raw_" + element_id] += 1
+
+	print("✨ WILD SPAWN! Found 1 raw %s" % element_id)
+
+	# Track in discovery stats
+	DiscoveryManager.track_collection(element_id, 1, "wild_spawn")
+
+	# Emit signal for UI notification
+	inventory_changed.emit()

@@ -1,0 +1,12 @@
+[config]
+name="HealthConnect"
+binary_type="local"
+binary="HealthConnectPlugin.aar"
+
+[dependencies]
+local=[]
+remote=["androidx.health.connect:connect-client:1.1.0-alpha09"]
+custom_maven_repos=[]
+
+[permissions]
+permissions=["android.permission.health.READ_STEPS", "android.permission.health.READ_DISTANCE"]

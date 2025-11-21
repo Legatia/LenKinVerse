@@ -31,7 +31,13 @@ func refresh_inventory() -> void:
 	for element in InventoryManager.elements:
 		var amount = InventoryManager.elements[element]
 		if amount > 0:
-			add_element_item(element, amount)
+			add_element_item(element, amount, false)
+
+	# Populate unregistered elements (special display)
+	for element in InventoryManager.unregistered_elements:
+		var amount = InventoryManager.unregistered_elements[element]
+		if amount > 0:
+			add_element_item(element, amount, true)
 
 	# Populate isotopes
 	for child in isotopes_tab.get_children():
@@ -56,17 +62,29 @@ func add_raw_material_item(element: String, amount: int) -> void:
 
 	raw_materials_tab.add_child(item)
 
-func add_element_item(element: String, amount: int) -> void:
+func add_element_item(element: String, amount: int, is_unregistered: bool = false) -> void:
 	var item = HBoxContainer.new()
 
 	var label = Label.new()
-	label.text = "⚫ %s × %d" % [element, amount]
+	if is_unregistered:
+		# Special display for unregistered elements
+		label.text = "🔬 %s × %d [UNREGISTERED]" % [element, amount]
+		label.add_theme_color_override("font_color", Color(0.96, 0.62, 0.04))  # Orange color
+	else:
+		label.text = "⚫ %s × %d" % [element, amount]
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	item.add_child(label)
 
-	var info_button = Button.new()
-	info_button.text = "INFO"
-	item.add_child(info_button)
+	if is_unregistered:
+		# Add multiply button for unregistered elements
+		var multiply_button = Button.new()
+		multiply_button.text = "MULTIPLY"
+		multiply_button.pressed.connect(func(): _multiply_unregistered(element))
+		item.add_child(multiply_button)
+	else:
+		var info_button = Button.new()
+		info_button.text = "INFO"
+		item.add_child(info_button)
 
 	var use_button = Button.new()
 	use_button.text = "USE"
@@ -77,14 +95,28 @@ func add_element_item(element: String, amount: int) -> void:
 func add_isotope_item(isotope: Dictionary) -> void:
 	var item = HBoxContainer.new()
 
-	var time_left = isotope.get("decay_time", 0) - Time.get_unix_time_from_system()
-	var hours_left = max(0, int(time_left / 3600.0))
+	# Get current volume in units
+	var volume = isotope.get("volume", 0.0)
+	var reactions_available = int(volume * 2)  # Each unit supports 2 reactions
 
-	var label = Label.new()
-	label.text = "💎 %s × %d ⏱️%dh" % [
+	# Color code based on volume remaining
+	var volume_color = ""
+	if volume >= 15:  # Healthy amount
+		volume_color = "[color=#4CAF50]"  # Green
+	elif volume >= 5:  # Medium
+		volume_color = "[color=#FF9800]"  # Orange
+	else:  # Low
+		volume_color = "[color=#F44336]"  # Red
+
+	var label = RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.custom_minimum_size = Vector2(220, 35)
+	label.text = "💎 raw %s %s%.1f units[/color] ⚛️×%d" % [
 		isotope.get("type", "?"),
-		isotope.get("amount", 1),
-		hours_left
+		volume_color,
+		volume,
+		reactions_available
 	]
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	item.add_child(label)
@@ -105,6 +137,20 @@ func _analyze_material(element: String) -> void:
 func _use_isotope(isotope: Dictionary) -> void:
 	print("Using isotope: ", isotope.get("type"))
 	# TODO: Open reaction UI with this isotope selected
+
+func _multiply_unregistered(element: String) -> void:
+	# Open gloves UI for multiplication
+	queue_free()
+	var gloves_ui = load("res://scenes/ui/gloves_ui.tscn").instantiate()
+	get_tree().root.add_child(gloves_ui)
+
+	# Auto-select the unregistered element for multiplication
+	gloves_ui.set_preselected_element(element)
+
+	# Switch to Multiply tab (tab index 1)
+	var tab_container = gloves_ui.get_node("Panel/TabContainer")
+	if tab_container:
+		tab_container.current_tab = 1
 
 func _on_close_button_pressed() -> void:
 	queue_free()

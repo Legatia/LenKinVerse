@@ -1,0 +1,166 @@
+[gd_scene load_steps=2 format=3 uid="uid://profile_ui"]
+
+[ext_resource type="Script" path="res://scripts/ui/profile_ui.gd" id="1_profile"]
+
+[node name="ProfileUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_profile")
+
+[node name="Background" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+
+[node name="ColorRect" type="ColorRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -280.0
+offset_right = 160.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "📊 PROFILE"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/VBoxContainer/Header"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "X"
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="WalletSection" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="SectionTitle" type="Label" parent="Panel/VBoxContainer/WalletSection"]
+layout_mode = 2
+text = "Wallet"
+
+[node name="WalletLabel" type="Label" parent="Panel/VBoxContainer/WalletSection"]
+layout_mode = 2
+text = "👻 8x7f...2kQ9"
+
+[node name="WorldLabel" type="Label" parent="Panel/VBoxContainer/WalletSection"]
+layout_mode = 2
+text = "🌍 No World Selected"
+
+[node name="SOLBalanceLabel" type="Label" parent="Panel/VBoxContainer/WalletSection"]
+layout_mode = 2
+text = "💎 SOL: ---"
+
+[node name="alSOLBalanceLabel" type="Label" parent="Panel/VBoxContainer/WalletSection"]
+layout_mode = 2
+text = "⚡ alSOL: ---"
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="GlovesSection" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="SectionTitle" type="Label" parent="Panel/VBoxContainer/GlovesSection"]
+layout_mode = 2
+text = "Alchemy Gloves"
+
+[node name="LevelLabel" type="Label" parent="Panel/VBoxContainer/GlovesSection"]
+layout_mode = 2
+text = "Gloves Level: 1"
+
+[node name="ProgressBar" type="ProgressBar" parent="Panel/VBoxContainer/GlovesSection"]
+layout_mode = 2
+max_value = 100.0
+value = 0.0
+show_percentage = false
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/GlovesSection/ProgressBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "0 / 500 analyses"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HSeparator3" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="StatsSection" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="SectionTitle" type="Label" parent="Panel/VBoxContainer/StatsSection"]
+layout_mode = 2
+text = "Statistics"
+
+[node name="AnalysesLabel" type="Label" parent="Panel/VBoxContainer/StatsSection"]
+layout_mode = 2
+text = "⚗️ Total Analyses: 0"
+
+[node name="DistanceLabel" type="Label" parent="Panel/VBoxContainer/StatsSection"]
+layout_mode = 2
+text = "🚶 Distance Traveled: 0.00 km"
+
+[node name="CollectedLabel" type="Label" parent="Panel/VBoxContainer/StatsSection"]
+layout_mode = 2
+text = "💰 Total lkC Collected: 0"
+
+[node name="IsotopesLabel" type="Label" parent="Panel/VBoxContainer/StatsSection"]
+layout_mode = 2
+text = "💎 Isotopes Discovered: 0"
+
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer/StatsSection"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[connection signal="pressed" from="Background" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/Header/CloseButton" to="." method="_on_close_button_pressed"]

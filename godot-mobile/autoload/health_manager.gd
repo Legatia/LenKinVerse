@@ -14,14 +14,22 @@ func _ready() -> void:
 	if OS.get_name() == "iOS":
 		if Engine.has_singleton("HealthKit"):
 			native_plugin = Engine.get_singleton("HealthKit")
-			print("HealthKit plugin loaded")
+			print("✅ HealthKit plugin loaded (iOS 15+)")
 	elif OS.get_name() == "Android":
-		if Engine.has_singleton("GoogleFit"):
+		# Try modern Health Connect API first (Android 14+)
+		if Engine.has_singleton("HealthConnect"):
+			native_plugin = Engine.get_singleton("HealthConnect")
+			print("✅ Health Connect plugin loaded (Android 14+)")
+		# Fallback to legacy Google Fit (deprecated but may exist)
+		elif Engine.has_singleton("GoogleFit"):
 			native_plugin = Engine.get_singleton("GoogleFit")
-			print("Google Fit plugin loaded")
+			print("⚠️ Google Fit plugin loaded (legacy - consider upgrading to Health Connect)")
 
 	if not native_plugin:
-		push_warning("Health plugin not found - using mock mode")
+		push_warning("⚠️ Health plugin not found - using mock mode for testing")
+		print("📱 To enable real health tracking:")
+		print("   iOS: Build with HealthKit plugin (see HEALTH_API_SETUP.md)")
+		print("   Android: Build with Health Connect plugin (see HEALTH_API_SETUP.md)")
 
 ## Request permissions to access health data
 func request_permissions() -> bool:
@@ -100,7 +108,7 @@ func calculate_efficiency(timestamp: int) -> float:
 	# Walking: ~0.7-0.8m per step = 95%
 	# Jogging: ~1.0-1.2m per step = 85%
 	# Running: ~1.2-1.5m per step = 70%
-	# Vehicle: very few steps for distance = 50%
+	# Vehicle/Cheating: very few steps for distance = 0% (no rewards)
 
 	if avg_stride < 0.85:
 		return 0.95  # Walking
@@ -109,7 +117,7 @@ func calculate_efficiency(timestamp: int) -> float:
 	elif steps > distance * 0.3:
 		return 0.70  # Running
 	else:
-		return 0.50  # Vehicle (few steps, large distance)
+		return 0.0  # Vehicle/Cheating (no rewards)
 
 ## Mock distance calculation for testing
 func _mock_distance(since_timestamp: int) -> float:

@@ -12,8 +12,8 @@ config_version=5
 
 config/name="LenKinVerse"
 config/description="Alchemy lab meets blockchain - Solana Edition"
-run/main_scene="res://scenes/ui/login_screen.tscn"
-config/features=PackedStringArray("4.4", "Mobile")
+run/main_scene="res://scenes/ui/world_selection.tscn"
+config/features=PackedStringArray("4.5", "Mobile")
 boot_splash/bg_color=Color(0.172549, 0.129412, 0.215686, 1)
 boot_splash/show_image=false
 config/icon="res://icon.svg"
@@ -25,6 +25,11 @@ InventoryManager="*res://autoload/inventory_manager.gd"
 WalletManager="*res://autoload/wallet_manager.gd"
 HealthManager="*res://autoload/health_manager.gd"
 ReactionManager="*res://autoload/reaction_manager.gd"
+DiscoveryManager="*res://autoload/discovery_manager.gd"
+TutorialManager="*res://autoload/tutorial_manager.gd"
+WorldManager="*res://autoload/world_manager.gd"
+AssetManager="*res://autoload/asset_manager.gd"
+AnnouncementManager="*res://autoload/announcement_manager.gd"
 
 [display]
 
@@ -34,12 +39,6 @@ window/size/mode=2
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep_height"
 window/handheld/orientation=1
-
-[rendering]
-
-textures/canvas_textures/default_texture_filter=0
-renderer/rendering_method="mobile"
-textures/vram_compression/import_etc2_astc=true
 
 [input]
 
@@ -55,3 +54,9 @@ ui_interact={
 2d_physics/layer_1="World"
 2d_physics/layer_2="Player"
 2d_physics/layer_3="InteractionZone"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true

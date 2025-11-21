@@ -1,0 +1,14 @@
+[config]
+name="HealthKit"
+binary="HealthKitPlugin.xcframework"
+initialization="HealthKitPlugin.register()"
+
+[dependencies]
+linked_frameworks=["HealthKit.framework"]
+capabilities=["com.apple.developer.healthkit"]
+
+[plist]
+privacy_description="NSHealthShareUsageDescription"="LenKinVerse tracks your steps and walking distance to reward you with in-game materials while you move. Your health data stays private and is never shared with third parties."
+privacy_description="NSHealthUpdateUsageDescription"="LenKinVerse needs to read your step count and distance to calculate offline rewards."
+
+required_capabilities=["healthkit"]

@@ -1,0 +1,175 @@
+# Godot 4.x
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+*.translation
+
+# Godot builds
+godot-mobile/builds/
+godot-mobile/exports/
+*.exe
+*.pck
+*.zip
+*.apk
+*.aab
+*.dmg
+*.app
+*.ipa
+*.x86_64
+*.x86
+*.32
+*.64
+
+# Godot generated files
+*.import
+.mono/
+data_*/
+mono_crash.*.json
+
+# Godot user-specific files
+user://
+*.save
+
+# Godot temporary files
+*.bak
+*~.nib
+.directory
+
+# Godot plugin builds
+godot-mobile/plugins/android/**/build/
+godot-mobile/plugins/android/**/.gradle/
+godot-mobile/plugins/android/**/*.aar
+godot-mobile/plugins/ios/**/*.xcframework
+godot-mobile/plugins/ios/**/DerivedData/
+
+# Solana/Anchor
+solana-contracts/.anchor
+solana-contracts/target/
+solana-contracts/**/*.rs.bk
+solana-contracts/Cargo.lock
+solana-contracts/*.so
+solana-contracts/test-ledger/
+solana-contracts/.config/
+solana-program/.anchor
+solana-program/target/
+solana-program/**/*.rs.bk
+solana-program/Cargo.lock
+
+# Node
+node_modules/
+.yarn/
+yarn.lock
+package-lock.json
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backend specific
+backend/uploads/
+backend/.env
+backend/dist/
+backend/coverage/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Build artifacts
+dist/
+build/
+deploy/
+*.o
+*.obj
+*.a
+*.lib
+
+# Logs and temp files
+*.tmp
+*.temp
+*.log
+.cache/
+temp/
+
+# Documentation builds
+docs/_build/
+docs/.doctrees/
+
+# Claude Code
+.claude/
+
+# Git
+*.orig
+*.rej
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# iOS/Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Android
+*.iml
+.gradle
+local.properties
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/gradle.xml
+.idea/misc.xml
+*.hprof
+
+# Health plugin specific
+godot-mobile/plugins/ios/healthkit/libs/
+godot-mobile/plugins/android/healthconnect/libs/godot-lib.*.aar
+
+# Database
+*.sql.backup
+*.db.backup
+waitlist.csv
+*.dump
+
+# Landing page
+landing-page/node_modules/
+landing-page/.cache/
+landing-page/dist/
+
+# Old branding artifacts (optional - can remove these lines later)
+# Keep track of old database in case rollback is needed
+# lenkinverse database exports can be kept as backups

@@ -13,8 +13,11 @@ godot-mobile/
 │   ├── wallet_manager.gd   # Solana wallet integration
 │   └── health_manager.gd   # Movement tracking (HealthKit/Google Fit)
 ├── scenes/
-│   ├── main.tscn           # Main room scene
+│   ├── solana_planet.tscn  # Solana planet room scene
+│   ├── base_planet.tscn    # Base (Ethereum L2) planet (coming soon)
+│   ├── sui_planet.tscn     # Sui planet (coming soon)
 │   └── ui/                 # UI screens
+│       ├── world_selection.tscn
 │       ├── login_screen.tscn
 │       ├── offline_rewards.tscn
 │       ├── storage_ui.tscn
@@ -39,35 +42,44 @@ godot-mobile/
 
 ### ✅ Implemented
 
-1. **Login Screen** - Wallet authentication
+1. **World/Blockchain Selection** - Multi-chain support (First Screen)
+   - Choose between Solana, Ethereum-Base, or Sui
+   - Beautiful world cards with descriptions
+   - Color-coded blockchain branding
+   - Persistent world selection
+   - Displayed in profile screen
+   - Foundation for multi-chain expansion
+   - **Must be selected before wallet login**
+
+2. **Login Screen** - Wallet authentication (Second Screen)
    - Solana wallet connection (Phantom/Solflare)
    - Health tracking permissions request
    - First-time user flow
+   - Appears after world selection
 
-2. **Offline Rewards Modal** - Welcome back screen
+3. **Offline Rewards Modal** - Welcome back screen
    - Distance traveled calculation
    - Raw material rewards display
    - Animated progress bar
    - Quick access to analysis or continue
 
-3. **Room Scene** - Top-down alchemy lab with 3 interactive zones
+4. **Room Scene** - Top-down alchemy lab with 3 interactive zones
    - Storage Box (top-left)
    - Gloves Station (center)
    - Marketplace (bottom-right)
 
-4. **Player Movement** - Top-down character controller
+5. **Player Movement** - Top-down character controller
    - 4-direction movement (WASD or arrow keys)
    - Visual feedback (color changes)
-   - Proximity-based interactions
-   - Interaction prompts
+   - Direct click-to-interact on furniture
 
-5. **Inventory System** - Complete management
+6. **Inventory System** - Complete management
    - Raw materials (unprocessed)
    - Elements (processed)
    - Isotopes (with decay timers)
    - Items/NFTs
 
-6. **Gloves System** - Analysis and reactions
+7. **Gloves System** - Analysis and reactions
    - 5 levels of progression
    - Batch analysis (size scales with level)
    - Processing speed improvements
@@ -75,39 +87,74 @@ godot-mobile/
    - Isotope discovery (0.1% chance)
    - Level-up notifications
 
-7. **Storage UI** - Inventory browser
+8. **Storage UI** - Inventory browser
    - Tabbed interface (Raw/Elements/Isotopes)
    - Take/deposit functionality
    - Real-time updates
 
-8. **Marketplace UI** - Trading hub
+9. **Marketplace UI** - Trading hub
    - Buy tab (market listings)
    - Sell tab (list your items)
    - Mint tab (create tokens/NFTs)
    - Wallet integration
    - Transaction signing
 
-9. **Game Manager** - App lifecycle
+10. **Reaction System** - Complete chemistry engine
+   - Physical reactions (1× charge multiplier)
+   - Chemical reactions (2× charge multiplier)
+   - Nuclear reactions (5× charge multiplier, requires isotope catalysts)
+   - Reaction database with 20+ reactions
+   - Element selection grid and reactant slots
+   - Success/failure handling with animations
+
+11. **Profile/Stats Screen** - User progress tracking
+   - Wallet address display
+   - Selected blockchain/world display
+   - Gloves level and progress bar
+   - Total analyses performed
+   - Distance traveled
+   - Total materials collected
+   - Isotopes discovered count
+
+12. **Game Manager** - App lifecycle
    - Offline rewards calculation
    - Save/load system
    - Background/resume handling
 
+13. **HUD System** - Real-time stats display
+   - Charge, lkC, and raw material counts
+   - Profile button with icon
+   - Auto-updating stats
+
+14. **Tutorial System** - First-time user onboarding
+   - 7-step guided walkthrough
+   - Highlights furniture with pointer arrows
+   - Skip option for experienced users
+   - Progress tracking and save state
+   - Only shows on first launch
+   - Explains all core mechanics
+
 ### 🚧 TODO
 
-1. **Reaction System** - Physical/chemical/nuclear reactions (in Gloves UI)
-2. **Profile/Stats Screen** - User progress tracking
-3. **Pixel Art Assets** - Replace placeholder sprites
-4. **Native Plugins** - Solana wallet & health APIs
-5. **Tutorial System** - First-time user onboarding
-6. **Sound Effects** - Collection, analysis, reactions
-7. **Backend API** - Marketplace listings, transaction validation
+1. **Pixel Art Assets** - Replace placeholder sprites
+2. **Native Plugin Implementation** - Build Solana wallet & health APIs (specs ready)
+3. **Sound Effects** - Collection, analysis, reactions
+4. **Backend API** - Marketplace listings, transaction validation
 
-## 🔌 Native Plugins Needed
+## 🔌 Native Plugins
+
+### ✅ Specifications Complete
+
+Complete documentation for native plugin developers:
+- **Solana Wallet:** `/docs/SOLANA_PLUGIN_SPEC.md`
+- **Implementation Guide:** `/docs/SOLANA_PLUGIN_IMPLEMENTATION.md`
 
 ### 1. Solana Mobile Wallet Adapter
 
+**Status:** 📋 Specification Complete - Ready for Implementation
+
 **Platform:** iOS & Android
-**Singleton Name:** `SolanaMobileWallet`
+**Singleton Name:** `SolanaWallet`
 
 **Methods:**
 ```gdscript
@@ -178,8 +225,9 @@ get_steps(options: Dictionary) -> Dictionary
 ### Running in Editor
 
 1. Press F5 or click "Play" button
-2. Use WASD or arrow keys to move
-3. Walk near furniture and press E to interact
+2. Use WASD or arrow keys to move player
+3. Click directly on furniture to interact (Storage, Gloves, Marketplace)
+4. Follow the tutorial on first launch
 
 ### Building for Mobile
 
@@ -212,13 +260,13 @@ Place in `assets/sprites/furniture/`:
 - `gloves_station.png` (80×80)
 - `marketplace.png` (80×80)
 
-Replace placeholder sprites in `main.tscn`.
+Replace placeholder sprites in planet scene files (`solana_planet.tscn`, etc.).
 
 ### Room Background
 Place in `assets/sprites/`:
 - `room_background.png` (360×640)
 
-Update Background node in `main.tscn`.
+Update Background node in planet scene files (`solana_planet.tscn`, etc.).
 
 ## 💾 Save System
 
@@ -279,8 +327,7 @@ This allows full development in Godot editor before plugin integration.
 - Player sprite animations use placeholders
 - Furniture sprites are colored rectangles
 - No sounds/music
-- Marketplace UI not implemented
-- Reaction system not implemented
+- Native plugins not yet implemented (using mocks)
 
 ## 📚 Resources
 
