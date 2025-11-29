@@ -1,0 +1,654 @@
+{
+  "address": "DdRY1fU4938imQBQSEkxLzZyZcD9hBbAJBT3YfWMqPe3",
+  "metadata": {
+    "name": "price_oracle",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "get_price",
+      "docs": [
+        "Get current LKO/SOL price with staleness check"
+      ],
+      "discriminator": [
+        238,
+        38,
+        193,
+        106,
+        228,
+        32,
+        210,
+        33
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  105,
+                  99,
+                  101,
+                  95,
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [],
+      "returns": "u64"
+    },
+    {
+      "name": "initialize_oracle",
+      "docs": [
+        "Initialize the price oracle",
+        "Only called once by the protocol deployer"
+      ],
+      "discriminator": [
+        144,
+        223,
+        131,
+        120,
+        196,
+        253,
+        181,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  105,
+                  99,
+                  101,
+                  95,
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "initial_lko_per_sol",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_oracle_active",
+      "docs": [
+        "Pause/unpause the oracle (emergency function)"
+      ],
+      "discriminator": [
+        236,
+        29,
+        166,
+        132,
+        184,
+        178,
+        95,
+        100
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  105,
+                  99,
+                  101,
+                  95,
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "oracle"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "is_active",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "transfer_authority",
+      "docs": [
+        "Transfer oracle authority to new keypair"
+      ],
+      "discriminator": [
+        48,
+        169,
+        76,
+        72,
+        229,
+        180,
+        55,
+        161
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  105,
+                  99,
+                  101,
+                  95,
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "oracle"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "update_element_price",
+      "docs": [
+        "Update element-specific price",
+        "For elements that have DEX pools, we can track individual prices"
+      ],
+      "discriminator": [
+        66,
+        139,
+        195,
+        124,
+        43,
+        100,
+        221,
+        15
+      ],
+      "accounts": [
+        {
+          "name": "element_oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  101,
+                  109,
+                  101,
+                  110,
+                  116,
+                  95,
+                  112,
+                  114,
+                  105,
+                  99,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "element_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oracle",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  105,
+                  99,
+                  101,
+                  95,
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "oracle"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "element_id",
+          "type": "string"
+        },
+        {
+          "name": "price_per_sol",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update_price",
+      "docs": [
+        "Update the LKO/SOL price",
+        "Only callable by the authority (backend)"
+      ],
+      "discriminator": [
+        61,
+        34,
+        117,
+        155,
+        75,
+        34,
+        123,
+        208
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  105,
+                  99,
+                  101,
+                  95,
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "oracle"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_lko_per_sol",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ElementPriceOracle",
+      "discriminator": [
+        68,
+        109,
+        157,
+        133,
+        99,
+        199,
+        3,
+        243
+      ]
+    },
+    {
+      "name": "PriceOracle",
+      "discriminator": [
+        57,
+        140,
+        120,
+        176,
+        191,
+        65,
+        52,
+        89
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AuthorityTransferred",
+      "discriminator": [
+        245,
+        109,
+        179,
+        54,
+        135,
+        92,
+        22,
+        64
+      ]
+    },
+    {
+      "name": "ElementPriceUpdated",
+      "discriminator": [
+        154,
+        167,
+        80,
+        110,
+        228,
+        122,
+        171,
+        222
+      ]
+    },
+    {
+      "name": "OracleInitialized",
+      "discriminator": [
+        42,
+        87,
+        109,
+        208,
+        1,
+        105,
+        101,
+        142
+      ]
+    },
+    {
+      "name": "OracleStatusChanged",
+      "discriminator": [
+        162,
+        18,
+        107,
+        87,
+        211,
+        217,
+        180,
+        247
+      ]
+    },
+    {
+      "name": "PriceUpdated",
+      "discriminator": [
+        154,
+        72,
+        87,
+        150,
+        246,
+        230,
+        23,
+        217
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Unauthorized: Only oracle authority can perform this action"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidPrice",
+      "msg": "Invalid price: Price must be greater than 0"
+    },
+    {
+      "code": 6002,
+      "name": "OracleInactive",
+      "msg": "Oracle is inactive: Price updates are paused"
+    },
+    {
+      "code": 6003,
+      "name": "PriceStale",
+      "msg": "Price is stale: Last update was more than 5 minutes ago"
+    },
+    {
+      "code": 6004,
+      "name": "ElementIdTooLong",
+      "msg": "Element ID too long: Maximum 32 characters"
+    }
+  ],
+  "types": [
+    {
+      "name": "AuthorityTransferred",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "old_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ElementPriceOracle",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "element_id",
+            "type": "string"
+          },
+          {
+            "name": "price_per_sol",
+            "type": "u64"
+          },
+          {
+            "name": "last_updated",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ElementPriceUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "element_id",
+            "type": "string"
+          },
+          {
+            "name": "price_per_sol",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "initial_price",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleStatusChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceOracle",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "lko_per_sol",
+            "type": "u64"
+          },
+          {
+            "name": "last_updated",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "old_price",
+            "type": "u64"
+          },
+          {
+            "name": "new_price",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

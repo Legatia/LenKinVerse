@@ -12,9 +12,15 @@ import {
   getPlayerAlSOLBalance,
   creditPlayerAlSOL,
   debitPlayerAlSOL,
+  swapLkcForAlsol,
+  checkWeeklyLkcAlsolLimit,
 } from '../db/queries';
 import { logger } from '../utils/logger';
 import waitlistRouter from '../routes/waitlist';
+import chemistryRouter from '../routes/chemistry';
+import playerRouter from '../routes/player';
+import marketplaceRouter from '../routes/marketplace';
+import solanaRouter from '../routes/solana';
 
 const app = express();
 
@@ -22,8 +28,12 @@ const app = express();
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
 
-// Waitlist route
+// Routes
 app.use('/api/waitlist', waitlistRouter);
+app.use('/api/chemistry', chemistryRouter);
+app.use('/api/player', playerRouter);
+app.use('/api/marketplace', marketplaceRouter);
+app.use('/api/solana', solanaRouter);
 
 // Request logging
 app.use((req, res, next) => {
@@ -153,21 +163,16 @@ app.post('/api/buy-alsol', async (req: Request, res: Response) => {
       });
     } else if (payment_type === 'lkc') {
       // LKC → alSOL: Check weekly limit, burn LKC, credit alSOL
-      // TODO: Implement LKC weekly limit check
-      // TODO: Burn LKC from player inventory
-
-      // 1M LKC = 0.001 alSOL
-      const alsolAmount = amount / 1_000_000;
-      const amountLamports = Math.floor(alsolAmount * 1_000_000_000);
-
-      const newBalance = await creditPlayerAlSOL(player_id, amountLamports);
+      const result = await swapLkcForAlsol(player_id, amount);
 
       res.json({
-        alsol_received: alsolAmount,
-        new_balance: newBalance,
-        payment_type: 'lkc',
-        weekly_limit_remaining: 1.0, // TODO: Calculate from database
         success: true,
+        alsol_received: result.alsol_received,
+        lkc_burned: result.lkc_burned,
+        new_balance: result.new_alsol_balance,
+        payment_type: 'lkc',
+        weekly_limit_remaining: result.weekly_limit_remaining,
+        message: result.message,
       });
     } else {
       return res.status(400).json({

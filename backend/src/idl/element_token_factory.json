@@ -1,0 +1,457 @@
+{
+  "address": "DFEdDQp4Ybv1LRtM6EHu8Nxwt1Bvpo6maFJFBkGj5WTQ",
+  "metadata": {
+    "name": "element_token_factory",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Element Token Factory - Mints fungible SPL tokens for discovered elements"
+  },
+  "instructions": [
+    {
+      "name": "get_element_info",
+      "docs": [
+        "Get element info (view function)"
+      ],
+      "discriminator": [
+        6,
+        132,
+        194,
+        110,
+        177,
+        129,
+        118,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "element_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  101,
+                  109,
+                  101,
+                  110,
+                  116,
+                  95,
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "element_id",
+          "type": "string"
+        }
+      ],
+      "returns": {
+        "defined": {
+          "name": "ElementData"
+        }
+      }
+    },
+    {
+      "name": "mark_tradeable",
+      "docs": [
+        "Mark element as tradeable after 30-minute lock period",
+        "Anyone can call this once the lock period expires"
+      ],
+      "discriminator": [
+        254,
+        195,
+        74,
+        217,
+        169,
+        46,
+        134,
+        85
+      ],
+      "accounts": [
+        {
+          "name": "element_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  101,
+                  109,
+                  101,
+                  110,
+                  116,
+                  95,
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "element_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "register_element",
+      "docs": [
+        "Register a new element and create its SPL token",
+        "Requires 10 SOL payment to protocol treasury",
+        "Supports co-governor if registered in same slot"
+      ],
+      "discriminator": [
+        134,
+        98,
+        75,
+        183,
+        141,
+        87,
+        213,
+        74
+      ],
+      "accounts": [
+        {
+          "name": "element_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  101,
+                  109,
+                  101,
+                  110,
+                  116,
+                  95,
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "element_mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  101,
+                  109,
+                  101,
+                  110,
+                  116,
+                  95,
+                  109,
+                  105,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "element_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  101,
+                  109,
+                  101,
+                  110,
+                  116,
+                  95,
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "element_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "governor_revenue_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  111,
+                  118,
+                  101,
+                  114,
+                  110,
+                  111,
+                  114,
+                  95,
+                  114,
+                  101,
+                  118,
+                  101,
+                  110,
+                  117,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "element_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "metadata",
+          "writable": true
+        },
+        {
+          "name": "protocol_treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "governor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "token_metadata_program",
+          "address": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "element_id",
+          "type": "string"
+        },
+        {
+          "name": "rarity",
+          "type": "u8"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ElementRegistry",
+      "discriminator": [
+        146,
+        148,
+        204,
+        12,
+        8,
+        15,
+        18,
+        236
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ElementIdTooLong",
+      "msg": "Element ID too long (max 32 characters)"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidRarity",
+      "msg": "Invalid rarity level (0-3)"
+    },
+    {
+      "code": 6002,
+      "name": "ElementAlreadyRegistered",
+      "msg": "Element already registered (not same slot)"
+    },
+    {
+      "code": 6003,
+      "name": "ElementNotFound",
+      "msg": "Element not found"
+    },
+    {
+      "code": 6004,
+      "name": "StillLocked",
+      "msg": "Element is still locked (30 min period)"
+    },
+    {
+      "code": 6005,
+      "name": "AlreadyTradeable",
+      "msg": "Element is already tradeable"
+    },
+    {
+      "code": 6006,
+      "name": "CoGovernorAlreadyAssigned",
+      "msg": "Co-governor already assigned"
+    }
+  ],
+  "types": [
+    {
+      "name": "ElementData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "element_id",
+            "type": "string"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "governor",
+            "type": "pubkey"
+          },
+          {
+            "name": "co_governor",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "registered_at",
+            "type": "i64"
+          },
+          {
+            "name": "registration_slot",
+            "type": "u64"
+          },
+          {
+            "name": "tradeable_at",
+            "type": "i64"
+          },
+          {
+            "name": "is_tradeable",
+            "type": "bool"
+          },
+          {
+            "name": "rarity",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ElementRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "element_count",
+            "type": "u64"
+          },
+          {
+            "name": "elements",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "ElementData"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

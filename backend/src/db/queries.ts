@@ -195,6 +195,175 @@ export async function debitPlayerAlSOL(
 }
 
 /**
+ * Check and update weekly LKC → alSOL limit
+ * Returns remaining weekly limit in lamports
+ */
+export async function checkWeeklyLkcAlsolLimit(
+  playerId: string,
+  requestedAmountLamports: number
+): Promise<{ allowed: boolean; remaining: number; reset_at: Date }> {
+  const WEEKLY_LIMIT_LAMPORTS = 1_000_000_000; // 1 alSOL per week
+
+  // Get or create player balance record
+  const result = await pool.query(
+    `INSERT INTO player_balances (player_id, weekly_lkc_alsol_used, week_reset_at)
+     VALUES ($1, 0, NOW() + INTERVAL '7 days')
+     ON CONFLICT (player_id) DO NOTHING
+     RETURNING weekly_lkc_alsol_used, week_reset_at`,
+    [playerId]
+  );
+
+  // Get current usage
+  const currentResult = await pool.query(
+    `SELECT weekly_lkc_alsol_used, week_reset_at FROM player_balances WHERE player_id = $1`,
+    [playerId]
+  );
+
+  if (currentResult.rows.length === 0) {
+    throw new Error(`Player ${playerId} not found`);
+  }
+
+  const currentUsed = parseInt(currentResult.rows[0].weekly_lkc_alsol_used, 10);
+  const resetAt = new Date(currentResult.rows[0].week_reset_at);
+
+  // Check if week has passed - reset if needed
+  if (new Date() > resetAt) {
+    await pool.query(
+      `UPDATE player_balances
+       SET weekly_lkc_alsol_used = 0,
+           week_reset_at = NOW() + INTERVAL '7 days'
+       WHERE player_id = $1`,
+      [playerId]
+    );
+    logger.info(`🔄 Reset weekly LKC→alSOL limit for ${playerId}`);
+    return {
+      allowed: requestedAmountLamports <= WEEKLY_LIMIT_LAMPORTS,
+      remaining: WEEKLY_LIMIT_LAMPORTS,
+      reset_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    };
+  }
+
+  const remaining = WEEKLY_LIMIT_LAMPORTS - currentUsed;
+  const allowed = requestedAmountLamports <= remaining;
+
+  return { allowed, remaining, reset_at: resetAt };
+}
+
+/**
+ * Update weekly LKC → alSOL usage after successful swap
+ */
+export async function updateWeeklyLkcAlsolUsage(
+  playerId: string,
+  amountLamports: number
+): Promise<void> {
+  await pool.query(
+    `UPDATE player_balances
+     SET weekly_lkc_alsol_used = weekly_lkc_alsol_used + $1
+     WHERE player_id = $2`,
+    [amountLamports, playerId]
+  );
+  logger.info(`📊 Updated weekly LKC→alSOL usage for ${playerId}: +${amountLamports / 1_000_000_000} alSOL`);
+}
+
+/**
+ * Swap LKC for alSOL with weekly limit enforcement
+ * 1M LKC = 0.001 alSOL (1,000,000:1 ratio)
+ */
+export async function swapLkcForAlsol(
+  playerWallet: string,
+  lkcAmount: number
+): Promise<{
+  success: boolean;
+  alsol_received: number;
+  lkc_burned: number;
+  new_alsol_balance: number;
+  weekly_limit_remaining: number;
+  message: string;
+}> {
+  // Calculate alSOL amount (1M LKC = 0.001 alSOL)
+  const alsolAmount = lkcAmount / 1_000_000;
+  const amountLamports = Math.floor(alsolAmount * 1_000_000_000);
+
+  // Check weekly limit
+  const limitCheck = await checkWeeklyLkcAlsolLimit(playerWallet, amountLamports);
+
+  if (!limitCheck.allowed) {
+    const remainingAlsol = limitCheck.remaining / 1_000_000_000;
+    throw new Error(
+      `Weekly limit exceeded. Remaining: ${remainingAlsol.toFixed(3)} alSOL. ` +
+        `Resets at: ${limitCheck.reset_at.toISOString()}`
+    );
+  }
+
+  // Check if player has enough LKC
+  const inventoryResult = await pool.query(
+    `SELECT amount FROM player_inventory
+     WHERE player_wallet = $1 AND item_type = 'element' AND item_id = 'lkC'`,
+    [playerWallet]
+  );
+
+  if (inventoryResult.rows.length === 0 || parseInt(inventoryResult.rows[0].amount) < lkcAmount) {
+    throw new Error(`Insufficient LKC balance. Need ${lkcAmount} LKC.`);
+  }
+
+  // Start transaction
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Burn LKC from inventory
+    await client.query(
+      `UPDATE player_inventory
+       SET amount = amount - $1,
+           updated_at = NOW()
+       WHERE player_wallet = $2 AND item_type = 'element' AND item_id = 'lkC'`,
+      [lkcAmount, playerWallet]
+    );
+
+    // Credit alSOL
+    const balanceResult = await client.query(
+      `INSERT INTO player_balances (player_id, alsol_balance)
+       VALUES ($1, $2)
+       ON CONFLICT (player_id)
+       DO UPDATE SET alsol_balance = player_balances.alsol_balance + $2
+       RETURNING alsol_balance`,
+      [playerWallet, amountLamports]
+    );
+
+    // Update weekly usage
+    await client.query(
+      `UPDATE player_balances
+       SET weekly_lkc_alsol_used = weekly_lkc_alsol_used + $1
+       WHERE player_id = $2`,
+      [amountLamports, playerWallet]
+    );
+
+    await client.query('COMMIT');
+
+    const newBalance = parseInt(balanceResult.rows[0].alsol_balance, 10);
+    const newLimitCheck = await checkWeeklyLkcAlsolLimit(playerWallet, 0);
+
+    logger.info(
+      `🔥 Swapped ${lkcAmount} LKC → ${alsolAmount.toFixed(3)} alSOL for ${playerWallet}`
+    );
+
+    return {
+      success: true,
+      alsol_received: alsolAmount,
+      lkc_burned: lkcAmount,
+      new_alsol_balance: newBalance / 1_000_000_000,
+      weekly_limit_remaining: newLimitCheck.remaining / 1_000_000_000,
+      message: `Successfully swapped ${lkcAmount} LKC for ${alsolAmount.toFixed(3)} alSOL`,
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Get element data (wild spawns, capacity, etc.)
  */
 export async function getElementData(elementId: string) {

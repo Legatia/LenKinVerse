@@ -19,9 +19,10 @@
   "author": "LenKinVerse Team",
   "license": "MIT",
   "dependencies": {
-    "@coral-xyz/anchor": "^0.31.0",
+    "@coral-xyz/anchor": "^0.31.1",
     "@noble/ed25519": "^2.0.0",
-    "@solana/web3.js": "^1.95.0",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
     "borsh": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
