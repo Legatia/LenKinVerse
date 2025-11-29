@@ -113,6 +113,9 @@ deploy/
 *.log
 .cache/
 temp/
+backend/logs/
+/tmp/*.log
+test_output.log
 
 # Documentation builds
 docs/_build/
@@ -170,6 +173,5 @@ landing-page/node_modules/
 landing-page/.cache/
 landing-page/dist/
 
-# Old branding artifacts (optional - can remove these lines later)
-# Keep track of old database in case rollback is needed
-# lenkinverse database exports can be kept as backups
+# Cleanup artifacts
+CLEANUP_PLAN.md

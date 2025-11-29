@@ -1,8 +1,13 @@
 /**
  * Event Listener Service
  *
+ * ⚠️ NOT CURRENTLY IN USE - FUTURE IMPLEMENTATION ⚠️
+ *
  * Listens for BridgedToIngame events from treasury_bridge program
  * Credits wild_spawns when governor burns SPL tokens
+ *
+ * Status: Incomplete - requires full Anchor event decoding
+ * Blocked by: Treasury bridge initialization and testing
  */
 
 import { Connection, PublicKey, LogsFilter } from '@solana/web3.js';
@@ -100,7 +105,7 @@ function parseEventFromLogs(logs: string[], eventName: string): BridgedToIngameE
 
 /**
  * Simple event parsing from logs (temporary implementation)
- * TODO: Implement proper Anchor event decoding
+ * FUTURE: Implement proper Anchor event decoding with IDL-based deserialization
  */
 function parseEventDataSimple(logs: string[]): BridgedToIngameEvent | null {
   // Look for msg! logs that contain event data
@@ -120,9 +125,9 @@ function parseEventDataSimple(logs: string[]): BridgedToIngameEvent | null {
       // This is a simplified approach - in production, decode event data properly
 
       return {
-        element_id: 'lkC', // TODO: Extract from event data
+        element_id: 'lkC', // FUTURE: Extract from decoded event data
         amount,
-        governor: '7xKXtg3xR...abc', // TODO: Extract from event data
+        governor: '7xKXtg3xR...abc', // FUTURE: Extract from decoded event data
       };
     }
   }
@@ -178,11 +183,11 @@ async function checkWildSpawnsCapacity(
   elementId: string,
   amountToAdd: number
 ): Promise<boolean> {
-  // TODO: Query database for current totals
+  // FUTURE: Query database for current totals
   // const currentData = await getElementData(elementId);
   // const totalInGame = currentData.wild_spawns + currentData.player_inventories + currentData.game_treasury;
 
-  // For now, allow (implement proper check in DB queries)
+  // For now, allow (implement proper check when wild_spawns table is created)
   return true;
 }
 

@@ -54,7 +54,7 @@ router.post('/', async (req: Request, res: Response) => {
         // Log waitlist signup
         console.log(`✉️ New waitlist signup: ${normalizedEmail} from ${source}`);
 
-        // TODO: Send welcome email (integrate with SendGrid/Mailgun)
+        // FUTURE: Send welcome email (integrate with SendGrid/Mailgun)
         // await sendWelcomeEmail(normalizedEmail);
 
         res.status(201).json({

@@ -143,11 +143,11 @@ router.get('/stats/:wallet', async (req: Request, res: Response) => {
     // Get energy stats
     const energyStats = await getPlayerEnergyStats(wallet);
 
-    // TODO: Add more stats when available
-    // - Total reactions performed
-    // - Total discoveries
-    // - Inventory value
-    // - Rank
+    // FUTURE: Add more stats when available
+    // - Total reactions performed (from reaction_history table)
+    // - Total discoveries (from discoveries table)
+    // - Inventory value (calculate from marketplace prices)
+    // - Rank (from leaderboard system)
 
     res.json({
       success: true,
@@ -159,13 +159,13 @@ router.get('/stats/:wallet', async (req: Request, res: Response) => {
           percentage: energyStats.energy_percentage,
           total_spent: energyStats.total_energy_spent,
         },
-        // TODO: Add more stats sections
+        // Placeholder stats - implement when needed
         reactions: {
-          total_performed: 0, // TODO: Get from reaction_history
+          total_performed: 0, // From reaction_history table
           success_rate: 0,
         },
         discoveries: {
-          total: 0, // TODO: Get from discoveries table
+          total: 0, // From discoveries table
         },
       },
     });

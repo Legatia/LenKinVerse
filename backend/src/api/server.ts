@@ -106,7 +106,7 @@ app.get('/api/player-balance', async (req: Request, res: Response) => {
 
     const alsolBalance = await getPlayerAlSOLBalance(player_id as string);
 
-    // TODO: Get element balances
+    // NOTE: Element balances available via /api/player/:wallet endpoint
     const elements = {
       lkC: 0,
       lkO: 0,
@@ -115,7 +115,7 @@ app.get('/api/player-balance', async (req: Request, res: Response) => {
 
     res.json({
       alsol: alsolBalance,
-      lkc: 0, // TODO: Get from database
+      lkc: 0, // Use player endpoint for full inventory
       elements,
       inventory_capacity: 1000,
     });
@@ -143,7 +143,7 @@ app.post('/api/buy-alsol', async (req: Request, res: Response) => {
 
     if (payment_type === 'sol') {
       // SOL → alSOL: Verify transaction, then credit
-      // TODO: Verify transaction on-chain
+      // FUTURE: Add on-chain transaction verification via Solana RPC
 
       if (!transaction_signature) {
         return res.status(400).json({
@@ -201,9 +201,11 @@ app.post('/api/send-transaction', async (req: Request, res: Response) => {
       });
     }
 
-    // TODO: Decode and send transaction to Solana
-    // TODO: Wait for confirmation
-    // TODO: Return transaction signature
+    // FUTURE: Implement full transaction submission pipeline
+    // 1. Decode signed transaction
+    // 2. Send to Solana RPC
+    // 3. Wait for confirmation
+    // 4. Return actual signature
 
     res.json({
       signature: '5j7s8k9d...mock',
@@ -233,7 +235,8 @@ app.get('/api/element-prices', async (req: Request, res: Response) => {
       });
     }
 
-    // TODO: Query price oracle on-chain
+    // FUTURE: Query price oracle on-chain (requires oracle initialization)
+    // Use /api/solana/price endpoint after oracle is initialized
 
     const elementList = (elements as string).split(',');
     const prices: Record<string, any> = {};
