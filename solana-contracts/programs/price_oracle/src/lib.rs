@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("DdRY1fU4938imQBQSEkxLzZyZcD9hBbAJBT3YfWMqPe3");
+declare_id!("5sJZ28FwcX8QYTPN1z6cryHUC8eHhX5HSdxhaBBxptKz");
 
 const MAX_PRICE_AGE_SECONDS: i64 = 300; // 5 minutes
 
