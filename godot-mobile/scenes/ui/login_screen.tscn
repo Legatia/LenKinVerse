@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://login_screen"]
+[gd_scene load_steps=3 format=3 uid="uid://login_screen"]
 
+[ext_resource type="Theme" uid="uid://reagenyx_theme" path="res://assets/ui/reagenyx_theme.tres" id="1_theme"]
 [ext_resource type="Script" path="res://scripts/ui/login_screen.gd" id="1_login"]
 
 [node name="LoginScreen" type="Control"]
@@ -9,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_theme")
 script = ExtResource("1_login")
 
 [node name="Background" type="ColorRect" parent="."]
@@ -42,7 +44,7 @@ horizontal_alignment = 1
 
 [node name="Title" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-text = "LENKINVERSE"
+text = "REAGENYX"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="VBoxContainer"]
